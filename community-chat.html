@@ -44,7 +44,25 @@
     background: rgba(249,245,237,.94);
     backdrop-filter: blur(12px);
     box-shadow: 0 1px 0 rgba(201,168,76,.15);
+    transition: box-shadow .3s ease;
   }
+  .nav.scrolled {
+    box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+  }
+  .nav-cta {
+    font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+    padding: 12px 26px; border: none; border-radius: 1px;
+    color: var(--ivory); background: var(--green);
+    font-family: 'EB Garamond', serif; cursor: pointer; text-decoration: none;
+    position: relative; overflow: hidden; transition: background .3s;
+  }
+  .nav-cta span { position: relative; z-index: 1; }
+  .nav-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.35) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .nav-cta:hover::before { transform: translateX(110%); transition: transform .8s ease; }
   .nav-inner {
     display: flex; align-items: center; justify-content: space-between;
     gap: 1.2rem 2rem; flex-wrap: wrap;
@@ -178,7 +196,7 @@
       <a class="nav-link" href="3-membership.html">The Membership</a>
       <a class="nav-link" href="3-membership-v2-dashboard.html">Dashboard</a>
       <a class="nav-link active" href="community-chat.html">Community</a>
-      <a class="nav-link" href="#" id="navSignOut">Sign out</a>
+      <a class="nav-link" href="#login" data-auth-toggle>Log in</a>
     </div>
   </div>
 </nav>
@@ -186,18 +204,26 @@
 <!-- Supabase + auth (order matters: config -> supabase-js -> client -> auth) -->
 <script src="config.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=10"></script>
+<script src="supabase-client.js?v=13"></script>
 <script src="auth.js?v=2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 (function () {
   var nav = document.getElementById('nav');
   var toggle = document.getElementById('navToggle');
   if (!nav || !toggle) return;
+  if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    gsap.set(nav, { y: -14, opacity: 0 });
+    gsap.to(nav, { y: 0, opacity: 1, duration: .9, ease: 'power3.out', delay: .1 });
+  }
   toggle.addEventListener('click', function () {
     var open = nav.classList.toggle('open');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   });
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 })();
 </script>
 <script>
@@ -217,15 +243,7 @@
         window.location.href = 'index.html';
         return;
       }
-      /* Wire the sign-out link now that we know the member is signed in */
-      var signOut = document.getElementById('navSignOut');
-      if (signOut) {
-        signOut.addEventListener('click', async function (e) {
-          e.preventDefault();
-          await window.SupabaseClient.signOut();
-          window.location.href = 'index.html';
-        });
-      }
+      /* Sign-out is handled by auth.js's shared account pill (data-auth-toggle above). */
     } catch (e) {
       window.location.href = 'index.html';
     }

@@ -465,13 +465,17 @@
 </nav>
 <script src="config.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=10"></script>
+<script src="supabase-client.js?v=13"></script>
 <script src="auth.js?v=2"></script>
 <script>
 (function () {
   var nav = document.getElementById('nav');
   var toggle = document.getElementById('navToggle');
   if (!nav || !toggle) return;
+  if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    gsap.set(nav, { y: -14, opacity: 0 });
+    gsap.to(nav, { y: 0, opacity: 1, duration: .9, ease: 'power3.out', delay: .1 });
+  }
   toggle.addEventListener('click', function () {
     var open = nav.classList.toggle('open');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -606,40 +610,6 @@
        swap the array for a real data source without touching the markup -->
   <div class="content-groups" id="contentGroups" aria-live="polite"></div>
 </main>
-
-<!-- ══ CONTENT VIEWER MODAL ══ -->
-<div id="contentViewerModal" style="display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(20,46,31,.75); backdrop-filter: blur(8px);">
-  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; overflow-y: auto;">
-    <div id="viewerPanel" style="position: relative; width: 100%; max-width: 900px; background: var(--ivory); border: 0.5px solid var(--gold-light); border-radius: 1px; box-shadow: 0 40px 80px -30px rgba(20,46,31,.55); max-height: 90vh; display: flex; flex-direction: column;">
-      <div style="padding: 1.5rem 1.8rem; border-bottom: 0.5px solid rgba(201,168,76,.3); display: flex; align-items: center; justify-content: space-between;">
-        <h3 id="viewerTitle" style="font-family: 'Playfair Display', serif; font-size: 20px; font-style: italic; color: var(--green); margin: 0;"></h3>
-        <button onclick="closeContentViewer()" style="background: none; border: 0.5px solid var(--gold-light); color: var(--muted); padding: 8px 18px; border-radius: 1px; font-family: 'EB Garamond', serif; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer;">Close</button>
-      </div>
-      <div id="viewerTabs" style="display: none; padding: 0 1.8rem; border-bottom: 0.5px solid rgba(201,168,76,.3); background: rgba(255,255,255,.5);">
-        <button id="audioTab" onclick="switchViewerTab('audio')" style="background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 20px; font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all .3s;">Audio</button>
-        <button id="documentTab" onclick="switchViewerTab('document')" style="background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 20px; font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all .3s;">Document</button>
-      </div>
-      <div id="viewerContent" style="flex: 1; overflow-y: auto; padding: 2rem 1.8rem;">
-        <div id="audioViewer" style="display: none;">
-          <div style="text-align: center; padding: 2rem 0;">
-            <audio id="audioPlayer" controls controlsList="nodownload noplaybackrate" preload="none" style="width: 100%; max-width: 600px; outline: none;"></audio>
-          </div>
-        </div>
-        <div id="documentViewer" style="display: none;">
-          <div style="text-align: center; padding: 1rem 0;">
-            <button id="openPdfBtn" onclick="openPdfInNewWindow()" style="background: var(--green); color: var(--ivory); border: none; padding: 14px 28px; border-radius: 1px; font-family: 'EB Garamond', serif; font-size: 15px; letter-spacing: .08em; cursor: pointer; transition: transform .3s;">Open Document Viewer</button>
-            <p style="font-size: 13px; font-style: italic; color: var(--muted); margin-top: 1rem;">Document will open in a secure viewer window</p>
-          </div>
-        </div>
-        <div id="viewerLoading" style="text-align: center; padding: 3rem 0; font-size: 15px; font-style: italic; color: var(--muted);">Loading content...</div>
-        <div id="viewerError" style="display: none; text-align: center; padding: 3rem 0;">
-          <p style="font-size: 16px; color: var(--ink); margin-bottom: 1rem;">Failed to load content</p>
-          <button onclick="closeContentViewer()" style="background: var(--green); color: var(--ivory); border: none; padding: 12px 24px; border-radius: 1px; font-family: 'EB Garamond', serif; font-size: 14px; cursor: pointer;">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ══ CLOSING ══ -->
 <footer class="closing" data-screen-label="Closing">
@@ -980,13 +950,21 @@
   
   /* ══ Refresh content with completion-based unlock logic ══ */
   async function refreshContent() {
-    var userData = await window.SupabaseClient.getCurrentUser();
+    // Kick off the user fetch and the module fetch in parallel — the module
+    // list doesn't depend on who's logged in. If the user turns out to be
+    // logged out or an admin (redirected away below), the module fetch's
+    // result is simply unused; that's cheaper than paying its latency
+    // sequentially on every normal member load.
+    var userDataPromise = window.SupabaseClient.getCurrentUser();
+    var modulesPromise = loadModulesFromSupabase();
+
+    var userData = await userDataPromise;
     if (!userData || !userData.user) {
       // Not logged in - redirect to login
       window.location.href = 'index.html';
       return;
     }
-    
+
     // If this user is an admin, redirect them to the admin dashboard (bypass profile check)
     if (userData.profile && userData.profile.role === 'admin') {
       window.location.href = 'admin-dashboard.html';
@@ -1036,9 +1014,11 @@
       }
     }
     
-    await loadModulesFromSupabase();
-    
-    var updatedContent = await window.SupabaseClient.getAvailableContent(userData.user.id, CONTENT);
+    await modulesPromise;
+
+    // getAvailableContent expects the profile row id (public.users.id), which
+    // is what user_progress.user_id is FK'd to — not the Supabase auth uid.
+    var updatedContent = await window.SupabaseClient.getAvailableContent(userData.profile.id, CONTENT);
     
     /* Update CONTENT array with new states */
     updatedContent.forEach(function(updated) {
@@ -1053,138 +1033,6 @@
     /* Re-render dashboard */
     populateMonthFilter();
     render();
-    
-    /* Re-attach card listeners */
-    setTimeout(attachCardListeners, 100);
-  }
-
-  /* ══ Content Viewer Modal Functions ══ */
-  var currentViewerModule = null;
-  var currentPdfPath = null;
-  
-  window.openContentViewer = async function(moduleId) {
-    var module = LOADED_MODULES.find(function(m) { return m.slug === moduleId; });
-    if (!module) return;
-    
-    currentViewerModule = module;
-    
-    var modal = document.getElementById('contentViewerModal');
-    var title = document.getElementById('viewerTitle');
-    var tabs = document.getElementById('viewerTabs');
-    var audioViewer = document.getElementById('audioViewer');
-    var documentViewer = document.getElementById('documentViewer');
-    var loading = document.getElementById('viewerLoading');
-    var error = document.getElementById('viewerError');
-    
-    title.textContent = module.title;
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-    
-    loading.style.display = 'block';
-    audioViewer.style.display = 'none';
-    documentViewer.style.display = 'none';
-    error.style.display = 'none';
-    
-    try {
-      var assets = await window.SupabaseClient.getSignedAssetsForModule(module);
-      
-      if (assets.error) {
-        throw new Error(assets.error.message || 'Failed to load content');
-      }
-      
-      var hasAudio = assets.data.audioUrl;
-      var hasPdf = assets.data.pdfUrl;
-      
-      if (!hasAudio && !hasPdf) {
-        throw new Error('No content available for this module');
-      }
-      
-      loading.style.display = 'none';
-      
-      if (hasAudio && hasPdf) {
-        tabs.style.display = 'block';
-        switchViewerTab('audio');
-        document.getElementById('audioPlayer').src = assets.data.audioUrl;
-        currentPdfPath = module.pdf_path;
-      } else if (hasAudio) {
-        tabs.style.display = 'none';
-        audioViewer.style.display = 'block';
-        document.getElementById('audioPlayer').src = assets.data.audioUrl;
-      } else if (hasPdf) {
-        tabs.style.display = 'none';
-        documentViewer.style.display = 'block';
-        currentPdfPath = module.pdf_path;
-      }
-      
-    } catch (err) {
-      console.error('Content viewer error:', err);
-      loading.style.display = 'none';
-      error.style.display = 'block';
-      error.querySelector('p').textContent = err.message || 'Failed to load content';
-    }
-  };
-  
-  window.switchViewerTab = function(tab) {
-    var audioTab = document.getElementById('audioTab');
-    var documentTab = document.getElementById('documentTab');
-    var audioViewer = document.getElementById('audioViewer');
-    var documentViewer = document.getElementById('documentViewer');
-    
-    if (tab === 'audio') {
-      audioTab.style.borderBottomColor = 'var(--gold)';
-      audioTab.style.color = 'var(--green)';
-      documentTab.style.borderBottomColor = 'transparent';
-      documentTab.style.color = 'var(--muted)';
-      audioViewer.style.display = 'block';
-      documentViewer.style.display = 'none';
-    } else {
-      documentTab.style.borderBottomColor = 'var(--gold)';
-      documentTab.style.color = 'var(--green)';
-      audioTab.style.borderBottomColor = 'transparent';
-      audioTab.style.color = 'var(--muted)';
-      documentViewer.style.display = 'block';
-      audioViewer.style.display = 'none';
-    }
-  };
-  
-  window.openPdfInNewWindow = function() {
-    if (currentPdfPath) {
-      var url = 'pdf-viewer.html?path=' + encodeURIComponent(currentPdfPath);
-      window.open(url, '_blank', 'width=1000,height=800');
-    }
-  };
-  
-  window.closeContentViewer = function() {
-    var modal = document.getElementById('contentViewerModal');
-    var audioPlayer = document.getElementById('audioPlayer');
-    
-    audioPlayer.pause();
-    audioPlayer.src = '';
-    currentViewerModule = null;
-    currentPdfPath = null;
-    
-    modal.style.display = 'none';
-    document.body.style.overflow = '';
-  };
-  
-  function attachCardListeners() {
-    document.querySelectorAll('.content-card[data-state="current"], .content-card[data-state="complete"]').forEach(function(card) {
-      card.addEventListener('click', function(e) {
-        e.preventDefault();
-        var moduleId = card.getAttribute('data-content-id');
-        if (moduleId) {
-          openContentViewer(moduleId);
-        }
-      });
-    });
-  }
-  
-  var viewerContainer = document.getElementById('audioViewer');
-  if (viewerContainer) {
-    viewerContainer.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      return false;
-    });
   }
 
   /* initial render */
@@ -1261,69 +1109,66 @@
   /* Initial render */
   render();
   
-  /* ══ Wire up content cards to open lesson modal ══ */
-  function attachCardListeners() {
-    var cards = document.querySelectorAll('.content-card');
-    cards.forEach(function(card) {
-      if (card.dataset.state === 'locked') return; /* Don't attach to locked cards */
-      
-      card.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        /* Find the lesson data */
-        var lessonId = this.dataset.contentId;
-        var lessonData = CONTENT.find(function(item) { return item.id === lessonId; });
-        
-        if (!lessonData) {
-          console.error('[Dashboard] Click: no lesson data found for id:', lessonId);
-          return;
-        }
-        if (typeof window.openLessonModal !== 'function') {
-          console.error('[Dashboard] Click: window.openLessonModal is not available — lesson-modal.js may have failed to initialize. Check earlier console errors.');
-          return;
-        }
+  /* ══ Wire up content cards to open lesson modal ══
+     Delegated on the stable groupsEl container (never replaced itself —
+     only its innerHTML is rebuilt by render()), so this survives every
+     filter/sort/grouping re-render without needing to be re-attached. */
+  groupsEl.addEventListener('click', function(e) {
+    var card = e.target.closest('.content-card');
+    if (!card || !groupsEl.contains(card)) return;
+    if (card.dataset.state === 'locked') return; /* Don't open locked cards */
 
-        /* Build ordered navigation list from currently visible, non-locked cards */
-        var navIds = Array.from(document.querySelectorAll('.content-card[data-state="current"], .content-card[data-state="complete"]'))
-          .map(function(el) { return el.getAttribute('data-content-id'); });
-        var navigationList = navIds
-          .map(function(id) { return CONTENT.find(function(item) { return item.id === id; }); })
-          .filter(Boolean)
-          .map(function(item) {
-            return {
-              id: item.id,
-              week: item.week,
-              month: item.month,
-              type: item.type,
-              title: item.title,
-              description: item.note,
-              availability_status: item.state === 'locked' ? 'locked' : 'available',
-              status: item.state,
-              moduleData: item.moduleData
-            };
-          });
-        
-        /* Prepare lesson data for modal */
-        var modalData = {
-          id: lessonData.id,
-          week: lessonData.week,
-          month: lessonData.month,
-          type: lessonData.type,
-          title: lessonData.title,
-          description: lessonData.note,
-          availability_status: lessonData.state === 'locked' ? 'locked' : 'available',
-          status: lessonData.state,
-          moduleData: lessonData.moduleData,
-          navigationList: navigationList
+    e.preventDefault();
+
+    /* Find the lesson data */
+    var lessonId = card.dataset.contentId;
+    var lessonData = CONTENT.find(function(item) { return item.id === lessonId; });
+
+    if (!lessonData) {
+      console.error('[Dashboard] Click: no lesson data found for id:', lessonId);
+      return;
+    }
+    if (typeof window.openLessonModal !== 'function') {
+      console.error('[Dashboard] Click: window.openLessonModal is not available — lesson-modal.js may have failed to initialize. Check earlier console errors.');
+      return;
+    }
+
+    /* Build ordered navigation list from currently visible, non-locked cards */
+    var navIds = Array.from(document.querySelectorAll('.content-card[data-state="current"], .content-card[data-state="complete"]'))
+      .map(function(el) { return el.getAttribute('data-content-id'); });
+    var navigationList = navIds
+      .map(function(id) { return CONTENT.find(function(item) { return item.id === id; }); })
+      .filter(Boolean)
+      .map(function(item) {
+        return {
+          id: item.id,
+          week: item.week,
+          month: item.month,
+          type: item.type,
+          title: item.title,
+          description: item.note,
+          availability_status: item.state === 'locked' ? 'locked' : 'available',
+          status: item.state,
+          moduleData: item.moduleData
         };
-        
-        window.openLessonModal(modalData);
       });
-    });
-  }
-  
-  /* Attach listeners after initial render */
-  setTimeout(attachCardListeners, 100);
+
+    /* Prepare lesson data for modal */
+    var modalData = {
+      id: lessonData.id,
+      week: lessonData.week,
+      month: lessonData.month,
+      type: lessonData.type,
+      title: lessonData.title,
+      description: lessonData.note,
+      availability_status: lessonData.state === 'locked' ? 'locked' : 'available',
+      status: lessonData.state,
+      moduleData: lessonData.moduleData,
+      navigationList: navigationList
+    };
+
+    window.openLessonModal(modalData);
+  });
   
   /* ══ Listen for lesson progress updates from modal ══ */
   window.addEventListener('lessonProgressUpdated', async function(e) {

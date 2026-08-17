@@ -42,6 +42,10 @@
     background: rgba(249,245,237,.94);
     backdrop-filter: blur(12px);
     box-shadow: 0 1px 0 rgba(201,168,76,.15);
+    transition: box-shadow .3s ease;
+  }
+  .nav.scrolled {
+    box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
   }
   .nav-inner {
     display: flex; align-items: center; justify-content: space-between;
@@ -60,45 +64,58 @@
     font-size: 16px; color: var(--muted); text-decoration: none;
     position: relative; padding-bottom: 4px; transition: color .3s;
   }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 0.5px; width: 100%;
+    background: var(--gold); transform: scaleX(0); transform-origin: right;
+    transition: transform .45s cubic-bezier(.22,1,.36,1);
+  }
   .nav-link:hover { color: var(--green); }
-  
-  /* Profile dropdown */
+  .nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+  .nav-link.active { color: var(--green); font-style: italic; }
+  .nav-link.active::after { transform: scaleX(1); }
+
+  /* Profile dropdown — same visual language as the site's nav-cta pill
+     (auth.js's .nav-account-dropdown) so admin and member navs match. */
   .profile-dropdown {
     position: relative;
   }
   .profile-trigger {
     display: flex; align-items: center; gap: 10px;
-    background: none; border: none; cursor: pointer;
-    font-family: 'EB Garamond', serif; font-size: 15px; color: var(--ink);
-    padding: 8px 12px; border-radius: 2px;
-    transition: background .3s;
+    background: var(--green); border: none; cursor: pointer;
+    font-family: 'EB Garamond', serif; font-size: 15px; color: var(--ivory);
+    padding: 10px 18px 10px 10px; border-radius: 1px;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
   }
-  .profile-trigger:hover { background: rgba(201,168,76,.1); }
+  .profile-trigger:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(27,60,40,.55); }
   .profile-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    background: var(--green); color: var(--ivory);
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(249,245,237,.2); color: var(--ivory);
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 500;
+    font-size: 13px; font-weight: 500;
   }
   .profile-menu {
-    position: absolute; top: 100%; right: 0; margin-top: 8px;
-    background: var(--ivory); border: 0.5px solid rgba(201,168,76,.6);
-    border-radius: 2px; min-width: 200px;
-    box-shadow: 0 10px 30px -10px rgba(27,60,40,.3);
-    opacity: 0; visibility: hidden; transform: translateY(-10px);
-    transition: all .3s;
+    position: absolute; top: calc(100% + 12px); right: 0;
+    min-width: 180px;
+    background: var(--ivory); border: 1px solid rgba(201,168,76,.35);
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(27,60,40,.15);
+    opacity: 0; visibility: hidden; transform: translateY(-8px);
+    transition: opacity .3s, transform .3s, visibility .3s;
+    z-index: 200;
   }
   .profile-menu.open {
     opacity: 1; visibility: visible; transform: translateY(0);
   }
   .profile-menu-item {
     display: block; padding: 12px 18px;
-    color: var(--ink); text-decoration: none;
+    color: var(--muted); text-decoration: none;
     font-size: 15px; border: none; background: none;
+    border-bottom: 0.5px solid rgba(201,168,76,.2);
     width: 100%; text-align: left; cursor: pointer;
-    transition: background .3s;
+    transition: background .3s, color .3s;
   }
-  .profile-menu-item:hover { background: rgba(201,168,76,.1); }
+  .profile-menu-item:last-child { border-bottom: none; }
+  .profile-menu-item:hover { background: rgba(181,134,13,.08); color: var(--green); }
   .profile-menu-divider {
     height: 0.5px; background: rgba(201,168,76,.3);
     margin: 8px 0;
@@ -631,19 +648,16 @@
 
 <!-- NAV -->
 <nav class="nav" id="nav">
-  <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
-  <div class="nav-links">
-    <a class="nav-link" href="index.html">Home</a>
+  <div class="nav-inner">
     <a href="index.html" class="nav-logo">
-      <svg viewBox="0 0 10 10" aria-hidden="true">
-        <polygon points="5,0.5 9.5,5 5,9.5 0.5,5" fill="none" stroke="#1B3C28" stroke-width="0.8"/>
-        <polygon points="5,3 7,5 5,7 3,5" fill="#b5860d"/>
-      </svg>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.8 15.2,8 8,15.2 0.8,8" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="8,4.6 11.4,8 8,11.4 4.6,8" fill="#b5860d"/></svg>
       <span>Lady Rabi'a Academy</span>
     </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
     <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
       <a href="3-membership-v2-dashboard.html" class="nav-link">Member Dashboard</a>
       <div class="profile-dropdown">
         <button class="profile-trigger" id="profileTrigger">
@@ -879,19 +893,27 @@
 <!-- Supabase JS -->
 <script src="config.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=10"></script>
+<script src="supabase-client.js?v=13"></script>
 <script src="brevo-email-service.js?v=2"></script>
 <script src="auth.js?v=2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 (function () {
   var nav = document.getElementById('nav');
   var toggle = document.getElementById('navToggle');
   if (!nav || !toggle) return;
+  if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    gsap.set(nav, { y: -14, opacity: 0 });
+    gsap.to(nav, { y: 0, opacity: 1, duration: .9, ease: 'power3.out', delay: .1 });
+  }
   toggle.addEventListener('click', function () {
     var open = nav.classList.toggle('open');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   });
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 })();
 </script>
 

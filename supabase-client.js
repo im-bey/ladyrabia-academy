@@ -416,31 +416,30 @@
     
     try {
       const assets = {};
-      
+
+      // These are three independent Storage round-trips — run them
+      // concurrently instead of one after another.
+      const jobs = [];
       if (module.audio_path) {
-        const parts = module.audio_path.split('/');
-        const bucket = parts[0];
-        const filePath = module.audio_path; // object key includes folder prefix inside bucket
-        const { data, error } = await createSignedUrl(bucket, filePath, 600);
-        if (!error && data) assets.audioUrl = data;
+        jobs.push(
+          createSignedUrl(module.audio_path.split('/')[0], module.audio_path, 600)
+            .then(function(res) { if (!res.error && res.data) assets.audioUrl = res.data; })
+        );
       }
-      
       if (module.pdf_path) {
-        const parts = module.pdf_path.split('/');
-        const bucket = parts[0];
-        const filePath = module.pdf_path;
-        const { data, error } = await createSignedUrl(bucket, filePath, 600);
-        if (!error && data) assets.pdfUrl = data;
+        jobs.push(
+          createSignedUrl(module.pdf_path.split('/')[0], module.pdf_path, 600)
+            .then(function(res) { if (!res.error && res.data) assets.pdfUrl = res.data; })
+        );
       }
-      
       if (module.image_path) {
-        const parts = module.image_path.split('/');
-        const bucket = parts[0];
-        const filePath = module.image_path;
-        const { data, error } = await createSignedUrl(bucket, filePath, 600);
-        if (!error && data) assets.imageUrl = data;
+        jobs.push(
+          createSignedUrl(module.image_path.split('/')[0], module.image_path, 600)
+            .then(function(res) { if (!res.error && res.data) assets.imageUrl = res.data; })
+        );
       }
-      
+      await Promise.all(jobs);
+
       return { data: assets, error: null };
     } catch (error) {
       return { error };
@@ -618,21 +617,28 @@
     return null;
   }
 
-  /* LocalStorage fallback for mock mode */
+  /* LocalStorage fallback for mock mode.
+     Keyed per-user (falling back to 'anon') so two members on the same
+     device/browser never read or overwrite each other's completion state. */
   var STORAGE_PREFIX = 'lra_progress_';
-  
+
+  function localProgressKey(moduleId) {
+    var userId = currentUser ? currentUser.id : 'anon';
+    return STORAGE_PREFIX + userId + '_' + moduleId;
+  }
+
   function getLocalProgress(moduleId) {
     try {
-      var data = localStorage.getItem(STORAGE_PREFIX + moduleId);
+      var data = localStorage.getItem(localProgressKey(moduleId));
       return data ? JSON.parse(data) : null;
     } catch (e) {
       return null;
     }
   }
-  
+
   function setLocalProgress(moduleId, data) {
     try {
-      localStorage.setItem(STORAGE_PREFIX + moduleId, JSON.stringify(data));
+      localStorage.setItem(localProgressKey(moduleId), JSON.stringify(data));
       return true;
     } catch (e) {
       return false;
@@ -649,7 +655,11 @@
    * @returns {Promise<Object|null>} User progress data or null
    */
   async function getUserProgress(moduleId) {
-    var userId = currentUser ? currentUser.id : null;
+    // user_progress.user_id is a FK to public.users.id (the profile row),
+    // NOT the Supabase auth uid — using currentUser.id here would violate
+    // the FK on every write and silently fail (caught below), which is why
+    // completion status was never actually persisting to the server before.
+    var userId = currentUserProfile ? currentUserProfile.id : null;
 
     // Authenticated users: server is the source of truth (cross-device sync)
     if (supabase && userId) {
@@ -719,7 +729,11 @@
     var saved = setLocalProgress(moduleId, progress);
     
     // Persist to Supabase for real users
-    var userId = currentUser ? currentUser.id : null;
+    // user_progress.user_id is a FK to public.users.id (the profile row),
+    // NOT the Supabase auth uid — using currentUser.id here would violate
+    // the FK on every write and silently fail (caught below), which is why
+    // completion status was never actually persisting to the server before.
+    var userId = currentUserProfile ? currentUserProfile.id : null;
     if (supabase && userId) {
       try {
         var moduleUuid = await resolveModuleUuid(moduleId);
@@ -874,7 +888,11 @@
     var saved = setLocalProgress(moduleId, progress);
     
     // Persist to Supabase for real users
-    var userId = currentUser ? currentUser.id : null;
+    // user_progress.user_id is a FK to public.users.id (the profile row),
+    // NOT the Supabase auth uid — using currentUser.id here would violate
+    // the FK on every write and silently fail (caught below), which is why
+    // completion status was never actually persisting to the server before.
+    var userId = currentUserProfile ? currentUserProfile.id : null;
     if (supabase && userId) {
       try {
         var moduleUuid = await resolveModuleUuid(moduleId);
@@ -920,7 +938,11 @@
     var saved = setLocalProgress(moduleId, progress);
     
     // Persist to Supabase for real users
-    var userId = currentUser ? currentUser.id : null;
+    // user_progress.user_id is a FK to public.users.id (the profile row),
+    // NOT the Supabase auth uid — using currentUser.id here would violate
+    // the FK on every write and silently fail (caught below), which is why
+    // completion status was never actually persisting to the server before.
+    var userId = currentUserProfile ? currentUserProfile.id : null;
     if (supabase && userId) {
       try {
         var moduleUuid = await resolveModuleUuid(moduleId);
@@ -962,7 +984,11 @@
     var saved = setLocalProgress(moduleId, progress);
     
     // Persist to Supabase for real users
-    var userId = currentUser ? currentUser.id : null;
+    // user_progress.user_id is a FK to public.users.id (the profile row),
+    // NOT the Supabase auth uid — using currentUser.id here would violate
+    // the FK on every write and silently fail (caught below), which is why
+    // completion status was never actually persisting to the server before.
+    var userId = currentUserProfile ? currentUserProfile.id : null;
     if (supabase && userId) {
       try {
         var moduleUuid = await resolveModuleUuid(moduleId);
@@ -1118,25 +1144,39 @@
       return !!(progress && progress.status === 'completed');
     }
 
+    // Build ONE global chronological sequence across every month, not a
+    // per-month restart. 'month' is 'YYYY-MM' so it sorts chronologically
+    // as a string; 'week' orders the items within a month. Only the very
+    // first item in this whole timeline is free by default — every other
+    // item requires the item immediately before it (in this global order,
+    // regardless of month) to be fully complete.
+    var activeModules = modules.filter(function(module) {
+      // Filter out disabled modules - they are completely hidden from members
+      return !module.is_disabled;
+    });
+    var sequence = activeModules.slice().sort(function(a, b) {
+      if (a.month !== b.month) return a.month < b.month ? -1 : 1;
+      return a.week - b.week;
+    });
+    var prevModuleById = {};
+    for (var i = 1; i < sequence.length; i++) {
+      prevModuleById[sequence[i].id] = sequence[i - 1];
+    }
+
     // Compute unlock status for each module
-    var contentWithStatus = modules
-      .filter(function(module) {
-        // Filter out disabled modules - they are completely hidden from members
-        return !module.is_disabled;
-      })
-      .map(function(module) {
+    var contentWithStatus = activeModules.map(function(module) {
         var userProgress = progressMap[module.id];
-        
+
         var state = 'locked';
         var unlockAfter = null;
-        
+
         // Check if release datetime has passed (full datetime comparison)
         var isReleased = true; // Default: no date restriction
         if (module.release_date) {
           var releaseDate = new Date(module.release_date);
           isReleased = now >= releaseDate;
         }
-        
+
         var releaseLabel = module.release_date ? formatReleaseLabel(module.release_date) : null;
 
         // Unpublished modules are locked with schedule info
@@ -1149,30 +1189,25 @@
           state = 'locked';
           unlockAfter = releaseLabel;
         }
-        // Released — Week 1: Always available
-        else if (module.week === 1) {
-          state = userProgress.status === 'completed' ? 'complete' : 'current';
+        else if (isFullyComplete(userProgress)) {
+          // Already completed — stays unlocked forever, even if a later
+          // stricter re-check of the chain would otherwise lock it.
+          state = 'complete';
         }
-        // Released — Week 2+: Sequential unlock requires previous week FULLY completed
-        else if (module.week >= 2) {
-          var prevWeek = modules.find(function(m) {
-            return m.month === module.month && m.week === module.week - 1 && !m.is_disabled;
-          });
-
-          if (!prevWeek) {
-            // No previous week exists — treat as available
-            state = userProgress.status === 'completed' ? 'complete' : 'current';
+        else {
+          var prevModule = prevModuleById[module.id];
+          if (!prevModule) {
+            // The very first item in the global sequence: always available
+            // once released (subject to the publish/date checks above).
+            state = 'current';
+          } else if (isFullyComplete(progressMap[prevModule.id])) {
+            state = 'current';
           } else {
-            var prevProgress = progressMap[prevWeek.id];
-            if (isFullyComplete(prevProgress)) {
-              state = userProgress.status === 'completed' ? 'complete' : 'current';
-            } else {
-              state = 'locked';
-              unlockAfter = 'Complete Week ' + (module.week - 1) + ' to unlock';
-            }
+            state = 'locked';
+            unlockAfter = 'Complete Week ' + prevModule.week + ' (' + prevModule.month + ') to unlock';
           }
         }
-        
+
         return {
           id: module.id,
           month: module.month,

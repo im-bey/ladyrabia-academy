@@ -380,6 +380,10 @@
   var nav = document.getElementById('nav');
   var toggle = document.getElementById('navToggle');
   if (!nav || !toggle) return;
+  if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    gsap.set(nav, { y: -14, opacity: 0 });
+    gsap.to(nav, { y: 0, opacity: 1, duration: .9, ease: 'power3.out', delay: .1 });
+  }
   toggle.addEventListener('click', function () {
     var open = nav.classList.toggle('open');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
