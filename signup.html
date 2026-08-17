@@ -448,7 +448,7 @@
 <!-- Supabase + auth (order matters: config -> supabase-js -> client -> auth) -->
 <script src="config.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=13"></script>
+<script src="supabase-client.js?v=15"></script>
 <script src="brevo-email-service.js?v=2"></script>
 <script src="auth.js?v=2"></script>
 <script src="login-modal.js?v=2"></script>
@@ -525,14 +525,26 @@
         return;
       }
 
-      // Show success message
-      showSuccess('Account created! Please check your email to verify your account.');
       form.reset();
-      
-      // Redirect after 3 seconds
-      setTimeout(function() {
-        window.location.href = 'index.html';
-      }, 3000);
+
+      // If the project auto-confirms email, signUpWithEmail already
+      // produced a live session — take them straight to the dashboard's
+      // plan picker so they can subscribe. Otherwise they'll pick a plan
+      // and check out after verifying their email and logging in.
+      var sessionRes = await window.SupabaseClient.getSession();
+      var hasSession = sessionRes && sessionRes.data && sessionRes.data.session;
+
+      if (hasSession) {
+        showSuccess('Account created! Redirecting you to choose your membership plan…');
+        setTimeout(function() {
+          window.location.href = '3-membership-v2-dashboard.html';
+        }, 1200);
+      } else {
+        showSuccess('Account created! Please check your email to verify your account, then log in to choose your membership plan.');
+        setTimeout(function() {
+          window.location.href = 'index.html';
+        }, 3000);
+      }
 
     } catch (error) {
       showError('An unexpected error occurred. Please try again.');

@@ -209,6 +209,53 @@
   }
   .btn-solid:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(27,60,40,.55); }
 
+  /* ══ MEMBERSHIP / BILLING PANEL ══ */
+  .membership-panel {
+    max-width: 1080px; margin: 2.2rem auto 0; padding: 0 clamp(1.25rem, 5vw, 2rem);
+  }
+  .membership-card {
+    border: 0.5px solid var(--gold-light); border-radius: 1px;
+    background: rgba(255,255,255,.5); padding: 1.6rem 1.8rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.5rem 2rem; flex-wrap: wrap;
+  }
+  .membership-info { display: flex; flex-direction: column; gap: 6px; }
+  .membership-plan {
+    font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic;
+    color: var(--green);
+  }
+  .membership-detail { font-size: 14px; color: var(--muted); }
+  .membership-detail.warn { color: #a3572a; }
+  .membership-status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+    padding: 5px 11px; border-radius: 1px; width: fit-content;
+    border: 0.5px solid rgba(27,60,40,.3); color: var(--green);
+    background: rgba(27,60,40,.06);
+  }
+  .membership-status-pill.is-canceling { color: #a3572a; border-color: rgba(163,87,42,.35); background: rgba(163,87,42,.08); }
+  .membership-status-pill.is-inactive { color: var(--muted); border-color: rgba(90,82,64,.3); background: rgba(90,82,64,.06); }
+  .membership-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .membership-actions .btn-ghost.danger:hover { color: #a3572a; border-color: #a3572a; background: rgba(163,87,42,.06); }
+
+  .plan-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .plan-card {
+    border: 0.5px solid var(--gold-light); border-radius: 1px;
+    background: rgba(255,255,255,.5); padding: 1.5rem 1.6rem;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s, border-color .35s;
+  }
+  .plan-card:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -24px rgba(27,60,40,.35); border-color: var(--gold); }
+  .plan-card-name { font-family: 'Playfair Display', serif; font-size: 17px; font-style: italic; color: var(--green); }
+  .plan-card-price { font-size: 26px; color: var(--green); font-family: 'Playfair Display', serif; }
+  .plan-card-price span { font-size: 13px; color: var(--muted); font-family: 'EB Garamond', serif; font-style: italic; }
+  .plan-card-note { font-size: 13px; color: var(--muted); line-height: 1.6; flex: 1; }
+
+  @media (max-width: 640px) {
+    .plan-picker { grid-template-columns: 1fr; }
+    .membership-card { flex-direction: column; align-items: flex-start; }
+  }
+
   /* bio line under the bar */
   .profile-bio {
     max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem) 0;
@@ -465,7 +512,7 @@
 </nav>
 <script src="config.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=13"></script>
+<script src="supabase-client.js?v=15"></script>
 <script src="auth.js?v=2"></script>
 <script>
 (function () {
@@ -560,6 +607,11 @@
     <p class="member-bio" id="memberBio" data-member-bio></p>
   </div>
 </header>
+
+<!-- ══ MEMBERSHIP / BILLING ══ -->
+<section class="membership-panel reveal" id="membershipPanel" aria-live="polite">
+  <!-- Populated by JS: either the active-subscription card, or the plan picker. -->
+</section>
 
 <!-- Loading overlay -->
 <div class="dashboard-loading">
@@ -1038,6 +1090,161 @@
   /* initial render */
   render();
   
+  /* ══ Membership / billing panel ══ */
+  var STRIPE_PLAN_LABELS = {
+    'price_1U5WeUCfVpWkvr0YXSgI4x8c': { name: 'Founding member', amount: '£17' },
+    'price_1U5WebCfVpWkvr0YgxCGRIoi': { name: 'Standard member', amount: '£25' }
+  };
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function renderPlanPicker(panel) {
+    panel.innerHTML =
+      '<div class="plan-picker">' +
+        '<div class="plan-card">' +
+          '<span class="plan-card-name">Founding member</span>' +
+          '<span class="plan-card-price">£17<span> / month</span></span>' +
+          '<p class="plan-card-note">Locked in at this rate for as long as you remain a member. Limited seats.</p>' +
+          '<button class="btn-solid" type="button" data-subscribe="founding">Join as founding member</button>' +
+        '</div>' +
+        '<div class="plan-card">' +
+          '<span class="plan-card-name">Standard member</span>' +
+          '<span class="plan-card-price">£25<span> / month</span></span>' +
+          '<p class="plan-card-note">Full membership access, renewed monthly by choice.</p>' +
+          '<button class="btn-ghost" type="button" data-subscribe="standard">Join as standard member</button>' +
+        '</div>' +
+      '</div>';
+
+    panel.querySelectorAll('[data-subscribe]').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        btn.disabled = true;
+        var originalText = btn.textContent;
+        btn.textContent = 'Redirecting to checkout…';
+        var result = await window.SupabaseClient.createCheckoutSession(btn.dataset.subscribe);
+        if (result.error || !result.data || !result.data.url) {
+          alert('Could not start checkout: ' + (result.error ? result.error.message : 'Unknown error'));
+          btn.disabled = false;
+          btn.textContent = originalText;
+          return;
+        }
+        window.location.href = result.data.url;
+      });
+    });
+  }
+
+  function renderActiveMembership(panel, sub) {
+    var planInfo = STRIPE_PLAN_LABELS[sub.stripe_price_id] || { name: 'Membership', amount: '' };
+    var canceling = sub.cancel_at_period_end;
+    var isPastDue = sub.status === 'past_due';
+
+    var pillClass = canceling ? 'is-canceling' : (isPastDue ? 'is-canceling' : '');
+    var pillLabel = canceling ? 'Cancels at period end' : (isPastDue ? 'Payment issue' : 'Active');
+
+    var detailHtml = canceling
+      ? '<span class="membership-detail warn">Access ends ' + formatDate(sub.current_period_end) + '</span>'
+      : (isPastDue
+          ? '<span class="membership-detail warn">Your last payment failed — update your card to keep access.</span>'
+          : '<span class="membership-detail">Renews ' + formatDate(sub.current_period_end) + '</span>');
+
+    panel.innerHTML =
+      '<div class="membership-card">' +
+        '<div class="membership-info">' +
+          '<span class="membership-status-pill ' + pillClass + '">' + pillLabel + '</span>' +
+          '<span class="membership-plan">' + planInfo.name + (planInfo.amount ? ' · ' + planInfo.amount + '/month' : '') + '</span>' +
+          detailHtml +
+        '</div>' +
+        '<div class="membership-actions">' +
+          '<button class="btn-ghost" type="button" id="manageBillingBtn">Manage billing</button>' +
+          (canceling
+            ? '<button class="btn-solid" type="button" id="resumeBtn">Resume membership</button>'
+            : '<button class="btn-ghost danger" type="button" id="cancelMembershipBtn">Cancel membership</button>') +
+        '</div>' +
+      '</div>';
+
+    var manageBtn = document.getElementById('manageBillingBtn');
+    if (manageBtn) {
+      manageBtn.addEventListener('click', async function() {
+        manageBtn.disabled = true;
+        var result = await window.SupabaseClient.createBillingPortalSession();
+        if (result.error || !result.data || !result.data.url) {
+          alert('Could not open billing portal: ' + (result.error ? result.error.message : 'Unknown error'));
+          manageBtn.disabled = false;
+          return;
+        }
+        window.location.href = result.data.url;
+      });
+    }
+
+    var cancelBtn = document.getElementById('cancelMembershipBtn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', async function() {
+        if (!confirm('Cancel your membership? You\'ll keep access until ' + formatDate(sub.current_period_end) + ', then it will end.')) return;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = 'Cancelling…';
+        var result = await window.SupabaseClient.cancelSubscription();
+        if (result.error) {
+          alert('Could not cancel: ' + result.error.message);
+          cancelBtn.disabled = false;
+          cancelBtn.textContent = 'Cancel membership';
+          return;
+        }
+        // The DB row updates via the Stripe webhook, asynchronously — wait
+        // briefly for it to actually land instead of re-rendering from a
+        // possibly-stale read taken before the webhook arrives.
+        await renderMembershipPanel(sub.updated_at);
+      });
+    }
+
+    var resumeBtn = document.getElementById('resumeBtn');
+    if (resumeBtn) {
+      resumeBtn.addEventListener('click', async function() {
+        resumeBtn.disabled = true;
+        resumeBtn.textContent = 'Resuming…';
+        var result = await window.SupabaseClient.resumeSubscription();
+        if (result.error) {
+          alert('Could not resume: ' + result.error.message);
+          resumeBtn.disabled = false;
+          resumeBtn.textContent = 'Resume membership';
+          return;
+        }
+        await renderMembershipPanel(sub.updated_at);
+      });
+    }
+  }
+
+  function wait(ms) { return new Promise(function(resolve) { setTimeout(resolve, ms); }); }
+
+  /* After telling Stripe to cancel/resume, the subscriptions row updates
+     via the webhook asynchronously — poll briefly for the row to actually
+     change before rendering, so the UI doesn't show stale pre-webhook
+     state right after the action succeeds. */
+  async function waitForSubscriptionChange(previousUpdatedAt) {
+    for (var i = 0; i < 6; i++) {
+      var sub = await window.SupabaseClient.getSubscription();
+      if (!sub || sub.updated_at !== previousUpdatedAt) return sub;
+      await wait(700);
+    }
+    return window.SupabaseClient.getSubscription();
+  }
+
+  async function renderMembershipPanel(previousUpdatedAt) {
+    var panel = document.getElementById('membershipPanel');
+    if (!panel) return;
+    var sub = previousUpdatedAt !== undefined
+      ? await waitForSubscriptionChange(previousUpdatedAt)
+      : await window.SupabaseClient.getSubscription();
+    var hasAccess = sub && ['active', 'trialing', 'past_due'].indexOf(sub.status) !== -1;
+    if (hasAccess) {
+      renderActiveMembership(panel, sub);
+    } else {
+      renderPlanPicker(panel);
+    }
+  }
+
   /* Refresh content on load to compute unlock states and hide loading overlay */
   function hideLoadingOverlay() {
     var loadingOverlay = document.querySelector('.dashboard-loading');
@@ -1051,7 +1258,11 @@
 
   async function initDashboard() {
     try {
+      // renderMembershipPanel() depends on currentUser, which
+      // refreshContent() is what populates (via getCurrentUser()) — must
+      // run after it, not in parallel with it.
       await refreshContent();
+      await renderMembershipPanel();
     } catch (e) {
       console.error('Dashboard init failed:', e);
     } finally {

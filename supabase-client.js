@@ -1226,6 +1226,85 @@
   }
 
   /* ══════════════════════════════════════════════
+     STRIPE SUBSCRIPTION FUNCTIONS
+     ══════════════════════════════════════════════ */
+
+  async function callStripeFunction(functionName, body) {
+    if (!supabase) return { error: { message: 'Supabase not initialized' } };
+    var sessionRes = await supabase.auth.getSession();
+    var accessToken = sessionRes.data && sessionRes.data.session && sessionRes.data.session.access_token;
+    if (!accessToken) return { error: { message: 'Not signed in' } };
+
+    try {
+      var res = await fetch(SUPABASE_URL + '/functions/v1/' + functionName, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + accessToken
+        },
+        body: JSON.stringify(Object.assign({ origin: resolveAppBaseUrl() }, body || {}))
+      });
+      var data = await res.json().catch(function() { return {}; });
+      if (!res.ok) return { error: data && data.error ? { message: data.error } : { message: 'Request failed (' + res.status + ')' } };
+      return { data: data, error: null };
+    } catch (e) {
+      return { error: { message: e.message || 'Network error' } };
+    }
+  }
+
+  /**
+   * Start a Stripe Checkout session for a membership plan.
+   * @param {string} plan - 'founding' or 'standard'
+   * @returns {Promise<{data?: {url: string}, error?: object}>}
+   */
+  async function createCheckoutSession(plan) {
+    return callStripeFunction('stripe-create-checkout-session', { plan: plan });
+  }
+
+  /** Schedule the caller's subscription to cancel at the end of the current billing period. */
+  async function cancelSubscription() {
+    return callStripeFunction('stripe-cancel-subscription', {});
+  }
+
+  /** Undo a scheduled cancellation before the period ends. */
+  async function resumeSubscription() {
+    return callStripeFunction('stripe-cancel-subscription', { resume: true });
+  }
+
+  /** Open the Stripe-hosted billing portal (update card, view invoices, cancel). */
+  async function createBillingPortalSession() {
+    return callStripeFunction('stripe-create-portal-session', {});
+  }
+
+  /**
+   * Get the current user's subscription row directly (protected by RLS —
+   * each user can only read their own row).
+   * @returns {Promise<object|null>}
+   */
+  async function getSubscription() {
+    if (!supabase) return null;
+    if (!currentUser) await loadCurrentUser();
+    if (!currentUser) return null;
+    try {
+      var res = await supabase
+        .from('subscriptions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (res.error) {
+        console.warn('getSubscription failed:', res.error);
+        return null;
+      }
+      return res.data;
+    } catch (e) {
+      console.warn('getSubscription exception:', e);
+      return null;
+    }
+  }
+
+  /* ══════════════════════════════════════════════
      INITIALIZATION & EXPORTS
      ══════════════════════════════════════════════ */
 
@@ -1272,7 +1351,13 @@
     updateListenProgress,
     markAudioListenedFully,
     getAudioSignedUrl,
-    getAvailableContent
+    getAvailableContent,
+    // Stripe subscription functions
+    createCheckoutSession,
+    cancelSubscription,
+    resumeSubscription,
+    createBillingPortalSession,
+    getSubscription
   };
 
 })();
