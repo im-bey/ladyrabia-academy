@@ -24,10 +24,14 @@
       domain: ''
     },
     email: {
-      from: 'hello@ladyrabiaacademy.com'
+      from: 'hello@ladyrabiaacademy.com',
+      brevo: {
+        apiKey: '',
+        senderEmail: 'hello@ladyrabiaacademy.com',
+        senderName: 'Lady Rabi\'a Academy'
+      }
     },
     site: {
-      // TODO: change to 'https://ladyrabiaacademy.com' (or launch domain) when the custom domain goes live
       publicUrl: 'https://ladyrabia.vercel.app'
     }
   };
