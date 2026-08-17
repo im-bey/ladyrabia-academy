@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady Rabi'a Academy — Community Chat</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory: #f9f5ed;
+    --ivory-warm: #f0ebe0;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --green-deep: #142e1f;
+    --gold: #b5860d;
+    --gold-light: #c9a84c;
+    --muted: #5a5240;
+  }
+
+  html { scroll-behavior: smooth; }
+  html, body { width: 100%; overflow-x: hidden; height: 100%; }
+
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    line-height: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::selection { background: rgba(181,134,13,.25); }
+
+  /* ══ NAV ══ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+    background: rgba(249,245,237,.94);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(201,168,76,.15);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem 2rem; flex-wrap: wrap;
+    max-width: 1240px; margin: 0 auto;
+    padding: 1.5rem clamp(1.5rem, 5vw, 2.75rem);
+  }
+  .nav-logo {
+    font-size: 18px; font-family: 'Playfair Display', serif; font-style: italic;
+    letter-spacing: .01em;
+    color: var(--green); text-decoration: none; display: flex; align-items: center; gap: 12px;
+  }
+  .nav-logo svg { display: block; width: 22px; height: 22px; }
+  .nav-links { display: flex; align-items: center; gap: 2.2rem; }
+  .nav-link {
+    font-size: 16px; color: var(--muted); text-decoration: none;
+    position: relative; padding-bottom: 4px; transition: color .3s;
+  }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 0.5px; width: 100%;
+    background: var(--gold); transform: scaleX(0); transform-origin: right;
+    transition: transform .45s cubic-bezier(.22,1,.36,1);
+  }
+  .nav-link:hover { color: var(--green); }
+  .nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+  .nav-link.active { color: var(--green); font-style: italic; }
+  .nav-link.active::after { transform: scaleX(1); }
+
+  /* ══ MAIN CONTENT ══ */
+  .main-content {
+    flex: 1;
+    margin-top: 80px;
+    padding: 3rem clamp(1.5rem, 5vw, 2.75rem) 2rem;
+    max-width: 1400px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .page-ornament {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1.5rem;
+  }
+  .page-ornament svg {
+    width: 100%;
+    height: 100%;
+    stroke: var(--gold);
+    fill: none;
+  }
+
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--green-deep);
+    margin-bottom: 1rem;
+  }
+
+  .page-description {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  /* ══ CHAT CONTAINER ══ */
+  .chat-container {
+    background: var(--ivory-warm);
+    border: 1px solid rgba(201,168,76,.35);
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(27,60,40,.08);
+    overflow: hidden;
+    width: 100%;
+    height: calc(100vh - 300px);
+    min-height: 600px;
+  }
+
+  /* Mobile hamburger */
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; }
+  .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--green); transition: transform .3s, opacity .3s; }
+
+  @media (max-width: 900px) {
+    .nav-toggle { display: flex; }
+    .nav-links {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: flex-start; gap: 1.2rem;
+      background: rgba(249,245,237,.98); border-bottom: 0.5px solid rgba(201,168,76,.45);
+      padding: 1rem clamp(1.5rem, 5vw, 2.75rem) 1.5rem;
+      box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+    }
+    .nav.open .nav-links { display: flex; }
+    .nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      padding: 2rem 1.5rem;
+    }
+    .page-title {
+      font-size: 28px;
+    }
+    .chat-container {
+      height: calc(100vh - 250px);
+      min-height: 500px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.8 15.2,8 8,15.2 0.8,8" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="8,4.6 11.4,8 8,11.4 4.6,8" fill="#b5860d"/></svg>
+      <span>Lady Rabi'a Academy</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="4-about-razia.html">About Razia</a>
+      <a class="nav-link" href="3-membership.html">The Membership</a>
+      <a class="nav-link" href="3-membership-v2-dashboard.html">Dashboard</a>
+      <a class="nav-link active" href="community-chat.html">Community</a>
+      <a class="nav-link" href="#" id="navSignOut">Sign out</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Supabase + auth (order matters: config -> supabase-js -> client -> auth) -->
+<script src="config.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=10"></script>
+<script src="auth.js?v=2"></script>
+<script>
+(function () {
+  var nav = document.getElementById('nav');
+  var toggle = document.getElementById('navToggle');
+  if (!nav || !toggle) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+<script>
+(function () {
+  /* Member-only guard: redirect logged-out visitors to the home page */
+  var attempts = 0;
+  var guard = setInterval(async function () {
+    attempts++;
+    if (!window.SupabaseClient) {
+      if (attempts > 30) { clearInterval(guard); window.location.href = 'index.html'; }
+      return;
+    }
+    clearInterval(guard);
+    try {
+      var userData = await window.SupabaseClient.getCurrentUser();
+      if (!userData || !userData.user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      /* Wire the sign-out link now that we know the member is signed in */
+      var signOut = document.getElementById('navSignOut');
+      if (signOut) {
+        signOut.addEventListener('click', async function (e) {
+          e.preventDefault();
+          await window.SupabaseClient.signOut();
+          window.location.href = 'index.html';
+        });
+      }
+    } catch (e) {
+      window.location.href = 'index.html';
+    }
+  }, 100);
+})();
+</script>
+
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-ornament">
+      <svg viewBox="0 0 60 60">
+        <polygon points="30,8 48,30 30,52 12,30" stroke-width="1.5"/>
+        <polygon points="30,18 40,30 30,42 20,30" stroke-width="1"/>
+        <circle cx="30" cy="30" r="4" fill="#b5860d"/>
+      </svg>
+    </div>
+    <h1 class="page-title">Community Chat</h1>
+    <p class="page-description">
+      Connect with other members, ask questions, share reflections, and support each other on this journey.
+    </p>
+  </div>
+
+  <div id="zulip-chat-app"></div>
+</main>
+
+<script src="zulip-chat.js?v=3"></script>
+<script>
+  /* Wait for Supabase to be ready and user to be authenticated before initializing chat */
+  (function() {
+    var attempts = 0;
+    var initInterval = setInterval(async function() {
+      attempts++;
+      if (!window.SupabaseClient || !window.initZulipChat) {
+        if (attempts > 50) {
+          clearInterval(initInterval);
+          console.error('[Chat] Failed to initialize: Supabase or Zulip not loaded');
+        }
+        return;
+      }
+      
+      try {
+        var userData = await window.SupabaseClient.getCurrentUser();
+        if (userData && userData.user) {
+          clearInterval(initInterval);
+          window.initZulipChat('zulip-chat-app');
+        } else if (attempts > 50) {
+          clearInterval(initInterval);
+          console.error('[Chat] User not authenticated');
+        }
+      } catch (e) {
+        if (attempts > 50) {
+          clearInterval(initInterval);
+          console.error('[Chat] Error checking auth:', e);
+        }
+      }
+    }, 100);
+  })();
+</script>
+
+</body>
+</html>

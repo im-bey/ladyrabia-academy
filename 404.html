@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady Rabi'a Academy — Page not found</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory: #f9f5ed;
+    --ivory-warm: #f0ebe0;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --green-deep: #142e1f;
+    --gold: #b5860d;
+    --gold-light: #c9a84c;
+    --muted: #5a5240;
+  }
+
+  html { scroll-behavior: smooth; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    line-height: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  ::selection { background: rgba(181,134,13,.25); }
+
+  a { color: var(--gold); }
+  a:hover { color: var(--green); }
+
+  /* ══ NAV ══ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+    background: rgba(249,245,237,.94);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(201,168,76,.15);
+    transition: box-shadow .3s ease;
+  }
+  .nav.scrolled { box-shadow: 0 10px 30px -18px rgba(27,60,40,.35); }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem 2rem; flex-wrap: wrap;
+    max-width: 1240px; margin: 0 auto;
+    padding: 1.5rem clamp(1.5rem, 5vw, 2.75rem);
+  }
+  .nav-logo {
+    font-size: 18px; font-family: 'Playfair Display', serif; font-style: italic;
+    letter-spacing: .01em;
+    color: var(--green); text-decoration: none; display: flex; align-items: center; gap: 12px;
+  }
+  .nav-logo svg { display: block; width: 22px; height: 22px; }
+  .nav-links { display: flex; align-items: center; gap: 2.2rem; }
+  .nav-link {
+    font-size: 16px; color: var(--muted); text-decoration: none;
+    position: relative; padding-bottom: 4px; transition: color .3s;
+  }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 0.5px; width: 100%;
+    background: var(--gold); transform: scaleX(0); transform-origin: right;
+    transition: transform .45s cubic-bezier(.22,1,.36,1);
+  }
+  .nav-link:hover { color: var(--green); }
+  .nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+  .nav-cta {
+    font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+    padding: 12px 26px; border: none; border-radius: 1px;
+    color: var(--ivory); background: var(--green);
+    font-family: 'EB Garamond', serif; cursor: pointer; text-decoration: none;
+    position: relative; overflow: hidden; transition: background .3s;
+  }
+  .nav-cta span { position: relative; z-index: 1; }
+  .nav-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.35) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .nav-cta:hover::before { transform: translateX(110%); transition: transform .8s ease; }
+
+  /* ══ 404 SCENE ══ */
+  .lost {
+    flex: 1;
+    min-height: 100vh;
+    min-height: 100svh;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ivory-warm);
+    overflow: hidden;
+    text-align: center;
+    padding: 8rem 1.5rem 5rem;
+  }
+  .hero-tiles {
+    position: absolute; inset: -60px; opacity: .5; pointer-events: none;
+    will-change: transform;
+  }
+  .hero-arch {
+    position: absolute; left: 50%; top: 55%;
+    width: min(560px, 92vw); height: auto; pointer-events: none;
+  }
+  .hero-arch path { stroke: var(--gold-light); fill: none; }
+  .lost-content { position: relative; z-index: 2; max-width: 640px; }
+  .lost-label {
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--gold); display: block; margin-bottom: 1.4rem;
+  }
+  .lost-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(64px, 9vw, 110px);
+    font-weight: 400; font-style: italic; line-height: 1;
+    color: var(--green); display: block; margin-bottom: 1.6rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .lost h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 3.2vw, 36px);
+    font-weight: 400; font-style: italic; line-height: 1.4;
+    color: var(--green); margin-bottom: 1.3rem;
+  }
+  .lost h1 .line { display: block; overflow: hidden; }
+  .lost h1 .line span { display: inline-block; }
+  .lost-sub {
+    font-size: clamp(16px, 1.5vw, 18px); line-height: 1.85; color: var(--muted);
+    font-style: italic; max-width: 460px; margin: 0 auto 2.4rem;
+  }
+  .btn-primary {
+    display: inline-block; background: var(--green); color: var(--ivory);
+    font-family: 'EB Garamond', serif; font-size: 15px; letter-spacing: .08em;
+    padding: 15px 36px; border: none; cursor: pointer; border-radius: 1px;
+    text-decoration: none; position: relative; overflow: hidden;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(27,60,40,.55); color: var(--ivory); }
+  .btn-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.4) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .btn-primary:hover::before { transform: translateX(110%); transition: transform .8s ease; }
+  .btn-primary span { position: relative; z-index: 1; }
+  .cta-secondary {
+    display: block; font-size: 14px; color: var(--gold); letter-spacing: .05em;
+    margin-top: 14px; font-style: italic; text-decoration: none; transition: color .3s;
+  }
+  .cta-secondary:hover { color: var(--green); }
+
+  /* small ornamental rule under the number */
+  .lost-orn { display: flex; justify-content: center; margin-bottom: 1.8rem; }
+  .lost-orn svg { width: min(280px, 60vw); height: auto; overflow: visible; }
+  .lost-orn path { stroke: var(--gold); fill: none; }
+
+  /* ══ CLOSING ══ */
+  .closing { text-align: center; padding: 3.2rem 1.5rem; background: var(--green); position: relative; overflow: hidden; }
+  .closing-tiles { position: absolute; inset: 0; opacity: .1; pointer-events: none; }
+  .closing p {
+    font-size: 15px; font-style: italic; color: rgba(249,245,237,.88);
+    line-height: 1.9; position: relative;
+  }
+  .closing a { color: var(--gold-light); text-decoration: none; border-bottom: 0.5px solid rgba(201,168,76,.5); transition: color .3s; }
+  .closing a:hover { color: var(--ivory); }
+
+  .reveal { will-change: transform, opacity; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+  }
+
+  /* Mobile hamburger */
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; }
+  .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--green); transition: transform .3s, opacity .3s; }
+
+  @media (max-width: 900px) {
+    .nav-toggle { display: flex; }
+    .nav-links {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: flex-start; gap: 1.2rem;
+      background: rgba(249,245,237,.98); border-bottom: 0.5px solid rgba(201,168,76,.45);
+      padding: 1rem clamp(1.5rem, 5vw, 2.75rem) 1.5rem;
+      box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+    }
+    .nav.open .nav-links { display: flex; }
+    .nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  }
+
+  @media (max-width: 720px) {
+    .nav-links { gap: 1.1rem; }
+    .nav-link { font-size: 14px; }
+    .lost { padding-top: 9rem; }
+  }
+</style>
+<template id="__bundler_thumbnail" data-bg-color="#f0ebe0">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#f0ebe0"/>
+    <polygon points="50,20 80,50 50,80 20,50" fill="none" stroke="#b5860d" stroke-width="1.5"/>
+    <text x="50" y="57" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="18" fill="#1B3C28">404</text>
+  </svg>
+</template>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.8 15.2,8 8,15.2 0.8,8" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="8,4.6 11.4,8 8,11.4 4.6,8" fill="#b5860d"/></svg>
+      <span>Lady Rabi'a Academy</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="4-about-razia.html">About Razia</a>
+      <a class="nav-link" href="3-membership.html">The Membership</a>
+      <a class="nav-link" href="2-opening-teaching.html">The Opening Teaching</a>
+      <a class="nav-link" href="#login" data-auth-toggle>Log in</a>
+      <a class="nav-cta" href="2-opening-teaching.html"><span>Request your seat</span></a>
+    </div>
+  </div>
+</nav>
+<script src="auth.js?v=2"></script>
+<script>
+(function () {
+  var nav = document.getElementById('nav');
+  var toggle = document.getElementById('navToggle');
+  if (!nav || !toggle) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+
+<!-- ══ 404 ══ -->
+<main class="lost" id="hero" data-screen-label="404">
+  <svg class="hero-tiles" id="heroTiles" aria-hidden="true" width="100%" height="100%">
+    <defs>
+      <pattern id="tile" width="56" height="56" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.35">
+          <polygon points="28,2 52,16 52,40 28,54 4,40 4,16"/>
+          <polygon points="28,10 46,20 46,36 28,46 10,36 10,20"/>
+          <line x1="28" y1="2" x2="28" y2="10"/><line x1="52" y1="16" x2="46" y2="20"/>
+          <line x1="52" y1="40" x2="46" y2="36"/><line x1="28" y1="54" x2="28" y2="46"/>
+          <line x1="4" y1="40" x2="10" y2="36"/><line x1="4" y1="16" x2="10" y2="20"/>
+        </g>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#tile)"/>
+  </svg>
+
+  <svg class="hero-arch" id="heroArch" viewBox="0 0 680 560" aria-hidden="true">
+    <path id="archOuter" stroke-width="1.1" d="M 60 560 L 60 300 C 60 195 105 130 240 78 C 300 55 325 38 340 6 C 355 38 380 55 440 78 C 575 130 620 195 620 300 L 620 560"/>
+    <path id="archInner" stroke-width="0.5" opacity="0.7" d="M 78 560 L 78 302 C 78 205 120 145 248 94 C 305 72 328 52 340 26 C 352 52 375 72 432 94 C 560 145 602 205 602 302 L 602 560"/>
+    <polygon id="archFinial" points="340,-14 348,-4 340,6 332,-4" fill="#b5860d" stroke="none" opacity="0"/>
+  </svg>
+
+  <div class="lost-content">
+    <span class="lost-label" id="heroLabel">Lady Rabi'a Academy</span>
+    <span class="lost-num" id="lostNum">404</span>
+    <div class="lost-orn" id="lostOrn" aria-hidden="true">
+      <svg viewBox="0 0 280 12">
+        <path class="draw" stroke-width="0.6" d="M 0 6 H 116"/>
+        <path class="draw" stroke-width="0.6" d="M 280 6 H 164"/>
+        <path class="draw" stroke-width="0.7" d="M 140 0.5 L 145.5 6 L 140 11.5 L 134.5 6 Z"/>
+      </svg>
+    </div>
+    <h1 id="heroTitle">
+      <span class="line"><span>This page has wandered off the path.</span></span>
+    </h1>
+    <p class="lost-sub" id="heroSub">Not every turn leads where we intended — and that, too, is part of the work. What you were looking for may have moved, or may never have been here at all.</p>
+    <div id="heroCtas">
+      <a class="btn-primary" href="index.html"><span>Return to the beginning</span></a>
+      <a class="cta-secondary" href="2-opening-teaching.html">or begin with the Opening Teaching</a>
+    </div>
+  </div>
+</main>
+
+<!-- ══ CLOSING ══ -->
+<footer class="closing" data-screen-label="Closing">
+  <svg class="closing-tiles" aria-hidden="true" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#tile)"/></svg>
+  <p>If you keep arriving here, <a href="index.html">the home page</a> will set you back on the path.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* nav background on scroll */
+  var nav = document.getElementById('nav');
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if (!window.gsap || reduced) return; /* page fully readable without animation */
+
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.set('#heroArch', { xPercent: -50, yPercent: -52 });
+
+  /* ── hero entrance: label → 404 → rule draws → heading line → sub → CTAs ── */
+  var archOuter = document.getElementById('archOuter');
+  var archInner = document.getElementById('archInner');
+  [archOuter, archInner].forEach(function (p) {
+    var len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+  });
+  var ornPaths = document.querySelectorAll('#lostOrn path.draw');
+  ornPaths.forEach(function (p) {
+    var len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+  });
+
+  var intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  intro
+    .to(archOuter, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0)
+    .to(archInner, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0.25)
+    .to('#archFinial', { opacity: 1, duration: .8 }, 1.9)
+    .from('#heroLabel', { y: 18, opacity: 0, duration: .9 }, 0.6)
+    .from('#lostNum', { y: 26, opacity: 0, duration: 1.1, ease: 'power4.out' }, 0.85)
+    .to(ornPaths, { strokeDashoffset: 0, duration: 1.1, ease: 'power2.inOut', stagger: .08 }, 1.1)
+    .from('#heroTitle .line span', { yPercent: 110, duration: 1.1, ease: 'power4.out' }, 1.3)
+    .from('#heroSub', { y: 22, opacity: 0, duration: .9 }, 1.7)
+    .from('#heroCtas', { y: 22, opacity: 0, duration: .9 }, 1.95);
+
+  /* gentle tile drift */
+  gsap.to('#heroTiles', { y: 60, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+})();
+</script>
+</body>
+</html>

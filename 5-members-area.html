@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady Rabi'a Academy — Members Area</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory: #f9f5ed;
+    --ivory-warm: #f0ebe0;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --green-deep: #142e1f;
+    --gold: #b5860d;
+    --gold-light: #c9a84c;
+    --muted: #5a5240;
+  }
+
+  html { scroll-behavior: smooth; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  ::selection { background: rgba(181,134,13,.25); }
+
+  a { color: var(--gold); }
+  a:hover { color: var(--green); }
+
+  /* ══ NAV ══ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+    background: rgba(249,245,237,.94);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(201,168,76,.15);
+    transition: box-shadow .3s ease;
+  }
+  .nav.scrolled {
+    box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem 2rem; flex-wrap: wrap;
+    max-width: 1240px; margin: 0 auto;
+    padding: 1.5rem clamp(1.5rem, 5vw, 2.75rem);
+  }
+  .nav-logo {
+    font-size: 18px; font-family: 'Playfair Display', serif; font-style: italic;
+    letter-spacing: .01em;
+    color: var(--green); text-decoration: none; display: flex; align-items: center; gap: 12px;
+  }
+  .nav-logo svg { display: block; width: 22px; height: 22px; }
+  .nav-links { display: flex; align-items: center; gap: 2.2rem; }
+  .nav-link {
+    font-size: 16px; color: var(--muted); text-decoration: none;
+    position: relative; padding-bottom: 4px; transition: color .3s;
+    background: none; border: none; cursor: pointer; font-family: 'EB Garamond', serif;
+  }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 0.5px; width: 100%;
+    background: var(--gold); transform: scaleX(0); transform-origin: right;
+    transition: transform .45s cubic-bezier(.22,1,.36,1);
+  }
+  .nav-link:hover { color: var(--green); }
+  .nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+  .nav-link.active { color: var(--green); font-style: italic; }
+  .nav-link.active::after { transform: scaleX(1); }
+  .nav-cta {
+    font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+    padding: 12px 26px; border: none; border-radius: 1px;
+    color: var(--ivory); background: var(--green);
+    font-family: 'EB Garamond', serif; cursor: pointer; text-decoration: none;
+    position: relative; overflow: hidden; transition: background .3s;
+  }
+  .nav-cta span { position: relative; z-index: 1; }
+  .nav-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.35) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .nav-cta:hover::before { transform: translateX(110%); transition: transform .8s ease; }
+
+  /* ══ HERO (short, members) ══ */
+  .hero {
+    min-height: 52vh;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ivory-warm);
+    overflow: hidden;
+    text-align: center;
+    padding: 8rem 1.5rem 4rem;
+  }
+  .hero-tiles {
+    position: absolute; inset: -60px; opacity: .5; pointer-events: none;
+    will-change: transform;
+  }
+  .hero-arch {
+    position: absolute; left: 50%; top: 60%;
+    width: min(480px, 92vw); height: auto; pointer-events: none;
+  }
+  .hero-arch path { stroke: var(--gold-light); fill: none; }
+  .hero-content { position: relative; z-index: 2; max-width: 720px; }
+  .hero-label {
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--gold); display: block; margin-bottom: 1.4rem;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(30px, 4.2vw, 48px);
+    font-weight: 400; font-style: italic; line-height: 1.32;
+    color: var(--green); margin-bottom: 0;
+  }
+  .hero h1 .line { display: block; overflow: hidden; }
+  .hero h1 .line span { display: inline-block; }
+
+  /* ══ SHARED SECTION ══ */
+  .wrap { width: 100%; max-width: 820px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem); }
+  .section { padding: 5rem 0 1rem; }
+  .section-lbl {
+    text-align: center; font-size: 10.5px; letter-spacing: .3em;
+    text-transform: uppercase; color: var(--gold); display: block; margin-bottom: .9rem;
+  }
+  .section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 2.8vw, 32px);
+    font-weight: 400; font-style: italic; color: var(--green);
+    text-align: center; margin-bottom: 2rem; line-height: 1.4;
+    text-wrap: pretty;
+  }
+
+  /* SVG divider that draws itself */
+  .orn-divider { display: flex; justify-content: center; padding: 3rem 0 0; }
+  .orn-divider svg { width: min(380px, 70vw); height: auto; overflow: visible; }
+  .orn-divider path { stroke: var(--gold); fill: none; }
+  .orn-divider .diamond-fill { fill: var(--gold); stroke: none; }
+
+  /* ══ MEMBER DRIP TIMELINE (echoes .weeks on membership page) ══ */
+  .weeks { position: relative; margin-top: 2.4rem; padding-left: 34px; }
+  .weeks-line { position: absolute; left: 6px; top: 8px; bottom: 8px; width: 0.5px; background: rgba(201,168,76,.35); }
+  .weeks-line-fill { position: absolute; left: 6px; top: 8px; width: 0.5px; height: 0; background: var(--gold); }
+  .week-item { position: relative; padding: 0 0 1.4rem; }
+  .week-item:last-child { padding-bottom: .4rem; }
+  .week-dot {
+    position: absolute; left: -31.5px; top: 26px; width: 8px; height: 8px;
+    background: var(--ivory); border: 1px solid var(--gold); transform: rotate(45deg);
+    transition: background .4s;
+  }
+  .week-item.lit .week-dot { background: var(--gold); }
+
+  .drip-card {
+    display: flex; align-items: center; gap: 18px;
+    border: 0.5px solid var(--gold-light); border-radius: 1px;
+    background: rgba(255,255,255,.5);
+    padding: 1.1rem 1.3rem;
+    text-decoration: none;
+    transition: transform .5s cubic-bezier(.22,1,.36,1), box-shadow .5s, border-color .5s;
+    position: relative;
+  }
+  .week-item.unlocked .drip-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 44px -24px rgba(27,60,40,.35);
+    border-color: var(--gold);
+  }
+  .week-item.locked .drip-card { background: rgba(255,255,255,.25); }
+  .week-item.locked .drip-icon, .week-item.locked .drip-titles { opacity: .45; }
+
+  .drip-icon { width: 36px; height: 36px; flex-shrink: 0; display: block; }
+  .drip-icon polygon, .drip-icon path, .drip-icon rect, .drip-icon circle, .drip-icon line {
+    fill: none; stroke: var(--gold); stroke-width: .8;
+  }
+  .drip-titles { flex: 1; min-width: 0; }
+  .drip-week { font-size: 10.5px; letter-spacing: .22em; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 6px; }
+  .drip-title { font-family: 'Playfair Display', serif; font-size: 17px; font-style: italic; color: var(--green); font-weight: 400; display: block; line-height: 1.4; }
+  .drip-state { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .drip-state-lbl { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; }
+  .week-item.unlocked .drip-state-lbl { color: var(--green); font-style: italic; }
+  .week-item.locked .drip-state-lbl { color: var(--muted); opacity: .7; }
+  .lock-glyph { width: 14px; height: 14px; display: block; }
+  .lock-glyph path, .lock-glyph rect { fill: none; stroke: var(--gold); stroke-width: .8; }
+  .week-item.unlocked .lock-glyph { display: none; }
+
+  /* ══ ACCOUNT STRIP ══ */
+  .member-note { text-align: center; font-size: 13px; font-style: italic; color: var(--muted); margin-top: 2.2rem; line-height: 1.7; }
+  .member-note button { background: none; border: none; cursor: pointer; font-family: 'EB Garamond', serif; font-size: 13px; font-style: italic; color: var(--muted); border-bottom: 0.5px solid rgba(201,168,76,.5); transition: color .3s, border-color .3s; padding: 0; }
+  .member-note button:hover { color: var(--green); border-color: var(--gold); }
+
+  /* ══ CLOSING ══ */
+  .closing { text-align: center; padding: 5rem 1.5rem 4.5rem; background: var(--green); position: relative; overflow: hidden; margin-top: 5rem; }
+  .closing-tiles { position: absolute; inset: 0; opacity: .1; pointer-events: none; }
+  .closing .orn-divider { padding: 0 0 2rem; }
+  .closing .orn-divider path { stroke: var(--gold-light); }
+  .closing .orn-divider .diamond-fill { fill: var(--gold-light); }
+  .closing p {
+    font-size: 17px; font-style: italic; color: rgba(249,245,237,.88);
+    line-height: 1.95; margin-bottom: 1rem; position: relative;
+  }
+  .closing-name { font-family: 'Playfair Display', serif; font-size: 19px; font-style: italic; color: var(--ivory); position: relative; }
+
+  /* ══════════════════════════════════════════════
+     MODALS — new UI, animated with GSAP.
+     Backdrop extends the nav's ivory blur/fade
+     treatment into a deep-green veil.
+     ══════════════════════════════════════════════ */
+  .modal-layer { position: fixed; inset: 0; z-index: 200; display: none; }
+  .modal-layer.open { display: block; }
+  .modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(20,46,31,.55);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+  }
+  .modal-positioner {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem; overflow-y: auto;
+  }
+  .modal-panel {
+    position: relative;
+    width: 100%; max-width: 420px;
+    background: var(--ivory);
+    border: 0.5px solid var(--gold-light);
+    border-radius: 1px;
+    padding: 2.6rem 2.3rem 2.4rem;
+    box-shadow: 0 40px 80px -30px rgba(20,46,31,.55);
+    opacity: 0;
+    margin: auto;
+  }
+  .modal-panel .c { position: absolute; width: 14px; height: 14px; border-color: var(--gold); }
+  .modal-panel .c.tl { top: 5px; left: 5px; border-top: 1px solid; border-left: 1px solid; }
+  .modal-panel .c.tr { top: 5px; right: 5px; border-top: 1px solid; border-right: 1px solid; }
+  .modal-panel .c.bl { bottom: 5px; left: 5px; border-bottom: 1px solid; border-left: 1px solid; }
+  .modal-panel .c.br { bottom: 5px; right: 5px; border-bottom: 1px solid; border-right: 1px solid; }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    background: none; border: 0.5px solid transparent; border-radius: 50%;
+    color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer;
+    font-family: 'EB Garamond', serif;
+    transition: color .3s, border-color .3s;
+  }
+  .modal-close:hover { color: var(--green); border-color: var(--gold-light); }
+  .modal-header { text-align: center; margin-bottom: 1.6rem; }
+  .modal-header .section-lbl { margin-bottom: .7rem; }
+  .modal-title {
+    font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 400;
+    font-style: italic; color: var(--green); line-height: 1.35;
+  }
+  .modal-orn { display: flex; justify-content: center; margin-top: .9rem; }
+  .modal-orn svg { width: 120px; height: auto; overflow: visible; }
+  .modal-orn path { stroke: var(--gold); fill: none; }
+
+  .auth-form { display: flex; flex-direction: column; gap: 0; }
+  .form-fields { border: none; display: flex; flex-direction: column; gap: 1.1rem; margin-bottom: 1.5rem; }
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field label {
+    font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold);
+  }
+  .field input {
+    border: 0.5px solid rgba(201,168,76,.6); padding: 13px 14px;
+    font-family: 'EB Garamond', serif; font-size: 15px; background: var(--ivory);
+    color: var(--ink); border-radius: 1px; outline: none; transition: border-color .3s;
+    width: 100%;
+  }
+  .field input:focus { border-color: var(--gold); }
+  .modal-panel .btn-primary {
+    display: block; width: 100%; text-align: center;
+    background: var(--green); color: var(--ivory);
+    font-family: 'EB Garamond', serif; font-size: 15px; letter-spacing: .08em;
+    padding: 15px 36px; border: none; cursor: pointer; border-radius: 1px;
+    text-decoration: none; position: relative; overflow: hidden;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
+  }
+  .modal-panel .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(27,60,40,.55); }
+  .modal-panel .btn-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.4) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .modal-panel .btn-primary:hover::before { transform: translateX(110%); transition: transform .8s ease; }
+  .modal-panel .btn-primary span { position: relative; z-index: 1; }
+  .modal-alt { text-align: center; margin-top: 1.1rem; font-size: 13px; font-style: italic; }
+  .modal-alt a, .modal-alt button {
+    color: var(--muted); text-decoration: none; background: none; border: none; cursor: pointer;
+    font-family: 'EB Garamond', serif; font-size: 13px; font-style: italic; padding: 0;
+    border-bottom: 0.5px solid rgba(201,168,76,.5); transition: color .3s, border-color .3s;
+  }
+  .modal-alt a:hover, .modal-alt button:hover { color: var(--green); border-color: var(--gold); }
+
+  /* plan display (signup + account) — echoes .founding-note / .cred-row */
+  .plan-display {
+    background: rgba(181,134,13,.07); border: 0.5px solid var(--gold-light); border-radius: 1px;
+    padding: 1rem 1.2rem; margin-bottom: 1.5rem;
+  }
+  .plan-display .plan-lbl { font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: .7rem; }
+  .plan-row {
+    display: flex; justify-content: space-between; gap: 14px; padding: .45rem 0;
+    border-bottom: 0.5px solid rgba(201,168,76,.3); font-size: 14.5px; line-height: 1.6; align-items: baseline;
+  }
+  .plan-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .plan-key { color: var(--muted); font-style: italic; }
+  .plan-val { color: var(--ink); text-align: right; }
+  .plan-val .price-strong { font-family: 'Playfair Display', serif; font-style: italic; color: var(--green); font-size: 16px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+  }
+
+  /* Mobile hamburger */
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; }
+  .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--green); transition: transform .3s, opacity .3s; }
+
+  @media (max-width: 900px) {
+    .nav-toggle { display: flex; }
+    .nav-links {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: flex-start; gap: 1.2rem;
+      background: rgba(249,245,237,.98); border-bottom: 0.5px solid rgba(201,168,76,.45);
+      padding: 1rem clamp(1.5rem, 5vw, 2.75rem) 1.5rem;
+      box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+    }
+    .nav.open .nav-links { display: flex; }
+    .nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  }
+
+  @media (max-width: 720px) {
+    .nav-links { gap: 1.1rem; }
+    .nav-link { font-size: 14px; }
+    .hero { padding-top: 8.5rem; }
+    .drip-card { flex-wrap: wrap; }
+    .modal-panel { padding: 2.2rem 1.5rem 2rem; }
+  }
+</style>
+<template id="__bundler_thumbnail" data-bg-color="#f0ebe0">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#f0ebe0"/>
+    <polygon points="50,20 80,50 50,80 20,50" fill="none" stroke="#b5860d" stroke-width="1.5"/>
+    <polygon points="50,32 68,50 50,68 32,50" fill="#b5860d"/>
+  </svg>
+</template>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.8 15.2,8 8,15.2 0.8,8" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="8,4.6 11.4,8 8,11.4 4.6,8" fill="#b5860d"/></svg>
+      <span>Lady Rabi'a Academy</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="4-about-razia.html">About Razia</a>
+      <a class="nav-link" href="3-membership.html">The Membership</a>
+      <a class="nav-link" href="2-opening-teaching.html">The Opening Teaching</a>
+      <button class="nav-link" type="button" data-open-modal="login" data-auth-toggle>Log in</button>
+      <button class="nav-cta" type="button" data-open-modal="account"><span>My Account</span></button>
+    </div>
+  </div>
+</nav>
+<script src="auth.js?v=2"></script>
+<script>
+(function () {
+  var nav = document.getElementById('nav');
+  var toggle = document.getElementById('navToggle');
+  if (!nav || !toggle) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+
+<!-- ══ HERO ══ -->
+<header class="hero" id="hero" data-screen-label="Members Hero">
+  <svg class="hero-tiles" id="heroTiles" aria-hidden="true" width="100%" height="100%">
+    <defs>
+      <pattern id="tile" width="56" height="56" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.35">
+          <polygon points="28,2 52,16 52,40 28,54 4,40 4,16"/>
+          <polygon points="28,10 46,20 46,36 28,46 10,36 10,20"/>
+          <line x1="28" y1="2" x2="28" y2="10"/><line x1="52" y1="16" x2="46" y2="20"/>
+          <line x1="52" y1="40" x2="46" y2="36"/><line x1="28" y1="54" x2="28" y2="46"/>
+          <line x1="4" y1="40" x2="10" y2="36"/><line x1="4" y1="16" x2="10" y2="20"/>
+        </g>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#tile)"/>
+  </svg>
+
+  <svg class="hero-arch" id="heroArch" viewBox="0 0 680 560" aria-hidden="true">
+    <path id="archOuter" stroke-width="1.1" d="M 60 560 L 60 300 C 60 195 105 130 240 78 C 300 55 325 38 340 6 C 355 38 380 55 440 78 C 575 130 620 195 620 300 L 620 560"/>
+    <path id="archInner" stroke-width="0.5" opacity="0.7" d="M 78 560 L 78 302 C 78 205 120 145 248 94 C 305 72 328 52 340 26 C 352 52 375 72 432 94 C 560 145 602 205 602 302 L 602 560"/>
+    <polygon id="archFinial" points="340,-14 348,-4 340,6 332,-4" fill="#b5860d" stroke="none" opacity="0"/>
+  </svg>
+
+  <div class="hero-content">
+    <span class="hero-label reveal" id="heroLabel">Lady Rabi'a Academy</span>
+    <h1 id="heroTitle">
+      <span class="line"><span>Members Area.</span></span>
+    </h1>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ══ THIS MONTH — drip progress ══ -->
+  <!-- TODO: SUPABASE — replace the hard-coded unlocked/locked states below with
+       the member's real drip schedule (content_unlocks table keyed by join date). -->
+  <section class="section" data-screen-label="This Month" style="padding-top:4rem">
+    <span class="section-lbl reveal">This month</span>
+    <h2 class="section-heading reveal">One theme. Four weeks.</h2>
+
+    <div class="weeks" id="weeks">
+      <div class="weeks-line"></div>
+      <div class="weeks-line-fill" id="weeksFill"></div>
+
+      <div class="week-item reveal unlocked">
+        <span class="week-dot"></span>
+        <a class="drip-card" href="#">
+          <!-- teaching: circle + play, from the opening-teaching player language -->
+          <svg class="drip-icon" viewBox="0 0 36 36" aria-hidden="true">
+            <circle cx="18" cy="18" r="14"/>
+            <path d="M 15 12.5 L 23.5 18 L 15 23.5 Z"/>
+          </svg>
+          <span class="drip-titles">
+            <span class="drip-week">Week 1</span>
+            <span class="drip-title">The main teaching</span>
+          </span>
+          <span class="drip-state">
+            <span class="drip-state-lbl">Available</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="week-item reveal unlocked">
+        <span class="week-dot"></span>
+        <a class="drip-card" href="#">
+          <!-- article: framed page with rule lines -->
+          <svg class="drip-icon" viewBox="0 0 36 36" aria-hidden="true">
+            <rect x="9" y="6" width="18" height="24"/>
+            <line x1="13" y1="13" x2="23" y2="13"/>
+            <line x1="13" y1="18" x2="23" y2="18"/>
+            <line x1="13" y1="23" x2="19" y2="23"/>
+          </svg>
+          <span class="drip-titles">
+            <span class="drip-week">Week 2</span>
+            <span class="drip-title">The written article</span>
+          </span>
+          <span class="drip-state">
+            <span class="drip-state-lbl">Available</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="week-item reveal locked">
+        <span class="week-dot"></span>
+        <div class="drip-card">
+          <!-- suhbah: two interlocking diamonds -->
+          <svg class="drip-icon" viewBox="0 0 36 36" aria-hidden="true">
+            <polygon points="14,8 24,18 14,28 4,18"/>
+            <polygon points="22,8 32,18 22,28 12,18"/>
+          </svg>
+          <span class="drip-titles">
+            <span class="drip-week">Week 3</span>
+            <span class="drip-title">The suhbah</span>
+          </span>
+          <span class="drip-state">
+            <svg class="lock-glyph" viewBox="0 0 14 14" aria-hidden="true">
+              <path d="M 4.5 6 V 4.2 C 4.5 2.8 5.6 1.8 7 1.8 C 8.4 1.8 9.5 2.8 9.5 4.2 V 6"/>
+              <rect x="3" y="6" width="8" height="6.2"/>
+            </svg>
+            <span class="drip-state-lbl">Locked</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="week-item reveal locked">
+        <span class="week-dot"></span>
+        <div class="drip-card">
+          <!-- practice: diamond with inner check -->
+          <svg class="drip-icon" viewBox="0 0 36 36" aria-hidden="true">
+            <polygon points="18,4 32,18 18,32 4,18"/>
+            <path d="M 13 18 L 16.5 21.5 L 23 14.5"/>
+          </svg>
+          <span class="drip-titles">
+            <span class="drip-week">Week 4</span>
+            <span class="drip-title">The practice</span>
+          </span>
+          <span class="drip-state">
+            <svg class="lock-glyph" viewBox="0 0 14 14" aria-hidden="true">
+              <path d="M 4.5 6 V 4.2 C 4.5 2.8 5.6 1.8 7 1.8 C 8.4 1.8 9.5 2.8 9.5 4.2 V 6"/>
+              <rect x="3" y="6" width="8" height="6.2"/>
+            </svg>
+            <span class="drip-state-lbl">Locked</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <p class="member-note reveal">Manage your plan in <button type="button" data-open-modal="account">My Account</button>.</p>
+  </section>
+</div>
+
+<!-- ══ CLOSING ══ -->
+<footer class="closing" data-screen-label="Closing">
+  <svg class="closing-tiles" aria-hidden="true" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#tile)"/></svg>
+  <div class="orn-divider" data-orn>
+    <svg viewBox="0 0 380 24" aria-hidden="true">
+      <path class="draw" stroke-width="0.6" d="M 0 12 H 150"/>
+      <path class="draw" stroke-width="0.6" d="M 380 12 H 230"/>
+      <path class="draw" stroke-width="0.7" d="M 190 2 L 200 12 L 190 22 L 180 12 Z"/>
+      <path class="draw" stroke-width="0.5" d="M 190 6.5 L 195.5 12 L 190 17.5 L 184.5 12 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 163 12 L 168 7 L 173 12 L 168 17 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 207 12 L 212 7 L 217 12 L 212 17 Z"/>
+      <circle class="diamond-fill pop" cx="190" cy="12" r="1.6"/>
+    </svg>
+  </div>
+  <p class="reveal">Our children are not only listening to what we teach.<br>They are learning from who we are becoming.</p>
+  <span class="closing-name reveal">— Razia</span>
+</footer>
+
+<!-- ══════════════════════════════════════════════
+     MODALS
+     ══════════════════════════════════════════════ -->
+
+<!-- LOGIN -->
+<div class="modal-layer" id="modal-login" role="dialog" aria-modal="true" aria-labelledby="loginTitle" data-screen-label="Login Modal">
+  <div class="modal-backdrop" data-modal-backdrop></div>
+  <div class="modal-positioner">
+    <div class="modal-panel">
+      <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+      <button class="modal-close" type="button" data-modal-close aria-label="Close">✕</button>
+      <header class="modal-header" data-modal-field>
+        <span class="section-lbl">Lady Rabi'a Academy</span>
+        <h2 class="modal-title" id="loginTitle">Log in</h2>
+        <div class="modal-orn" aria-hidden="true">
+          <svg viewBox="0 0 120 12">
+            <path stroke-width="0.6" d="M 0 6 H 46"/>
+            <path stroke-width="0.6" d="M 120 6 H 74"/>
+            <path stroke-width="0.7" d="M 60 0.5 L 65.5 6 L 60 11.5 L 54.5 6 Z"/>
+          </svg>
+        </div>
+      </header>
+
+      <!-- OUTSETA_LOGIN_EMBED_MOUNT
+           Outseta's login widget mounts inside .embed-mount below and exposes
+           CSS override hooks prefixed `o--App--`. The placeholder form matches
+           the size/position the embed will occupy. -->
+      <div class="embed-mount" data-outseta-mount="login">
+        <form class="auth-form" onsubmit="return false;">
+          <fieldset class="form-fields">
+            <div class="field" data-modal-field>
+              <label for="login-email">Email</label>
+              <input id="login-email" name="email" type="email" autocomplete="email">
+            </div>
+            <div class="field" data-modal-field>
+              <label for="login-password">Password</label>
+              <input id="login-password" name="password" type="password" autocomplete="current-password">
+            </div>
+          </fieldset>
+          <!-- TODO: OUTSETA — real submit handled by the embedded widget -->
+          <button class="btn-primary" type="submit" data-modal-field><span>Log in</span></button>
+          <p class="modal-alt" data-modal-field><a href="forgot-password.html">Forgot password?</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div class="modal-layer" id="modal-signup" role="dialog" aria-modal="true" aria-labelledby="signupTitle" data-screen-label="Signup Modal">
+  <div class="modal-backdrop" data-modal-backdrop></div>
+  <div class="modal-positioner">
+    <div class="modal-panel">
+      <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+      <button class="modal-close" type="button" data-modal-close aria-label="Close">✕</button>
+      <header class="modal-header" data-modal-field>
+        <span class="section-lbl">Join the membership</span>
+        <h2 class="modal-title" id="signupTitle">Sign up</h2>
+        <div class="modal-orn" aria-hidden="true">
+          <svg viewBox="0 0 120 12">
+            <path stroke-width="0.6" d="M 0 6 H 46"/>
+            <path stroke-width="0.6" d="M 120 6 H 74"/>
+            <path stroke-width="0.7" d="M 60 0.5 L 65.5 6 L 60 11.5 L 54.5 6 Z"/>
+          </svg>
+        </div>
+      </header>
+
+      <!-- plan display area -->
+      <div class="plan-display" data-modal-field>
+        <span class="plan-lbl">Your plan</span>
+        <div class="plan-row"><span class="plan-key">The Membership</span><span class="plan-val"><span class="price-strong">£17</span> / month</span></div>
+        <div class="plan-row"><span class="plan-key">Founding member rate</span><span class="plan-val">Standard rate £25 / month</span></div>
+      </div>
+
+      <!-- OUTSETA_SIGNUP_EMBED_MOUNT
+           Outseta's signup/checkout widget mounts inside .embed-mount below
+           (CSS hooks prefixed `o--App--`). Placeholder form matches its size.
+           TODO: STRIPE — checkout is handled through Outseta's Stripe connection. -->
+      <div class="embed-mount" data-outseta-mount="signup">
+        <form class="auth-form" onsubmit="return false;">
+          <fieldset class="form-fields">
+            <div class="field" data-modal-field>
+              <label for="signup-name">Name</label>
+              <input id="signup-name" name="name" type="text" autocomplete="name">
+            </div>
+            <div class="field" data-modal-field>
+              <label for="signup-email">Email</label>
+              <input id="signup-email" name="email" type="email" autocomplete="email">
+            </div>
+            <div class="field" data-modal-field>
+              <label for="signup-password">Password</label>
+              <input id="signup-password" name="password" type="password" autocomplete="new-password">
+            </div>
+          </fieldset>
+          <button class="btn-primary" type="submit" data-modal-field><span>Join the membership</span></button>
+          <p class="modal-alt" data-modal-field>Already a member? <button type="button" data-open-modal="login">Log in</button></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT -->
+<div class="modal-layer" id="modal-account" role="dialog" aria-modal="true" aria-labelledby="accountTitle" data-screen-label="Account Modal">
+  <div class="modal-backdrop" data-modal-backdrop></div>
+  <div class="modal-positioner">
+    <div class="modal-panel">
+      <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+      <button class="modal-close" type="button" data-modal-close aria-label="Close">✕</button>
+      <header class="modal-header" data-modal-field>
+        <span class="section-lbl">Lady Rabi'a Academy</span>
+        <h2 class="modal-title" id="accountTitle">My Account</h2>
+        <div class="modal-orn" aria-hidden="true">
+          <svg viewBox="0 0 120 12">
+            <path stroke-width="0.6" d="M 0 6 H 46"/>
+            <path stroke-width="0.6" d="M 120 6 H 74"/>
+            <path stroke-width="0.7" d="M 60 0.5 L 65.5 6 L 60 11.5 L 54.5 6 Z"/>
+          </svg>
+        </div>
+      </header>
+
+      <!-- OUTSETA_PROFILE_EMBED_MOUNT
+           Outseta's profile/billing widget mounts inside .embed-mount below
+           (CSS hooks prefixed `o--App--`). Read-only plan summary placeholder. -->
+      <div class="embed-mount" data-outseta-mount="account">
+        <section class="plan-display" data-modal-field aria-label="Plan summary">
+          <span class="plan-lbl">Plan summary</span>
+          <div class="plan-row"><span class="plan-key">Plan</span><span class="plan-val">The Membership</span></div>
+          <div class="plan-row"><span class="plan-key">Rate</span><span class="plan-val"><span class="price-strong">£17</span> / month</span></div>
+          <div class="plan-row"><span class="plan-key">Renewal</span><span class="plan-val">Monthly, renewed by choice</span></div>
+        </section>
+        <!-- TODO: STRIPE — "Manage billing" opens the Stripe customer portal (via Outseta) -->
+        <button class="btn-primary" type="button" data-modal-field><span>Manage billing</span></button>
+        <p class="modal-alt" data-modal-field><a href="#">Log out</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* nav background on scroll */
+  var nav = document.getElementById('nav');
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ══════════════════════════════════════════════
+     MODAL CONTROLLER — GSAP timelines
+     ══════════════════════════════════════════════ */
+  var openLayer = null;
+  var activeTl = null;
+
+  function buildOpenTimeline(layer) {
+    var backdrop = layer.querySelector('[data-modal-backdrop]');
+    var panel = layer.querySelector('.modal-panel');
+    var fields = layer.querySelectorAll('[data-modal-field]');
+    var tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+    tl.fromTo(backdrop, { opacity: 0 }, { opacity: 1, duration: .45, ease: 'power2.out' }, 0)
+      .fromTo(panel, { opacity: 0, scale: .96, y: 14 }, { opacity: 1, scale: 1, y: 0, duration: .55 }, .1)
+      .fromTo(fields, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: .6, stagger: .07 }, .28);
+    if (reduced) tl.timeScale(50); /* prefers-reduced-motion: near-instant */
+    return tl;
+  }
+
+  function openModal(name) {
+    var layer = document.getElementById('modal-' + name);
+    if (!layer) return;
+    if (openLayer) { hardClose(openLayer); }
+    openLayer = layer;
+    layer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    activeTl = buildOpenTimeline(layer);
+    activeTl.play(0);
+  }
+
+  function closeModal() {
+    if (!openLayer || !activeTl) return;
+    var layer = openLayer;
+    var tl = activeTl;
+    openLayer = null;
+    activeTl = null;
+    /* exit mirrors the entrance in reverse */
+    tl.timeScale(reduced ? 50 : 1.5);
+    tl.eventCallback('onReverseComplete', function () {
+      layer.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+    tl.reverse();
+  }
+
+  function hardClose(layer) {
+    layer.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-open-modal]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var name = btn.getAttribute('data-open-modal');
+      if (openLayer && openLayer.id === 'modal-' + name) return;
+      if (openLayer) { hardClose(openLayer); openLayer = null; activeTl = null; }
+      openModal(name);
+    });
+  });
+  document.querySelectorAll('[data-modal-close]').forEach(function (btn) {
+    btn.addEventListener('click', closeModal);
+  });
+  document.querySelectorAll('[data-modal-backdrop]').forEach(function (bd) {
+    bd.addEventListener('click', closeModal);
+  });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  if (location.hash === '#login' && !(window.LRAAuth && LRAAuth.signedIn())) { openModal('login'); }
+
+  /* mock sign-in: submitting the login form flips the navbar to Sign out */
+  var loginForm = document.querySelector('#modal-login .auth-form');
+  if (loginForm) loginForm.addEventListener('submit', function () {
+    if (window.LRAAuth) LRAAuth.signIn();
+    /* hard close: guaranteed cleanup regardless of animation state */
+    if (openLayer) { hardClose(openLayer); openLayer = null; activeTl = null; }
+    if (window.LRAAuth) LRAAuth.refresh();
+    /* redirect to membership dashboard after login */
+    setTimeout(function() {
+      window.location.href = '3-membership-v2-dashboard.html';
+    }, 300);
+  });
+
+  /* ══════════════════════════════════════════════
+     PAGE ANIMATIONS — same system as the other pages
+     ══════════════════════════════════════════════ */
+  if (!window.gsap || reduced) return;
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.set('#heroArch', { xPercent: -50, yPercent: -52 });
+
+  /* ── hero entrance ── */
+  var archOuter = document.getElementById('archOuter');
+  var archInner = document.getElementById('archInner');
+  [archOuter, archInner].forEach(function (p) {
+    var len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+  });
+  var intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  intro
+    .to(archOuter, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0)
+    .to(archInner, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0.25)
+    .to('#archFinial', { opacity: 1, duration: .8 }, 1.9)
+    .from('#heroLabel', { y: 18, opacity: 0, duration: .9 }, 0.7)
+    .from('#heroTitle .line span', { yPercent: 110, duration: 1.1, stagger: .16, ease: 'power4.out' }, 0.9);
+
+  /* hero parallax */
+  gsap.to('#heroTiles', { y: 60, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('#heroArch', { y: -90, opacity: .25, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+  /* ── generic reveals ── */
+  gsap.utils.toArray('.reveal').forEach(function (el) {
+    if (el.closest('#hero')) return;
+    gsap.from(el, {
+      y: 34, opacity: 0, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 86%', once: true }
+    });
+  });
+
+  /* ── ornamental dividers ── */
+  gsap.utils.toArray('[data-orn]').forEach(function (orn) {
+    var paths = orn.querySelectorAll('path.draw');
+    paths.forEach(function (p) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+    });
+    var pop = orn.querySelector('.pop');
+    if (pop) gsap.set(pop, { scale: 0, transformOrigin: 'center' });
+    var tl = gsap.timeline({ scrollTrigger: { trigger: orn, start: 'top 88%', once: true } });
+    tl.to(paths, { strokeDashoffset: 0, duration: 1.3, ease: 'power2.inOut', stagger: .08 });
+    if (pop) tl.to(pop, { scale: 1, duration: .5, ease: 'back.out(3)' }, '-=.4');
+  });
+
+  /* ── weeks timeline: gold line fills, dots light ── */
+  var weeks = document.getElementById('weeks');
+  if (weeks) {
+    gsap.to('#weeksFill', {
+      height: 'calc(100% - 16px)', ease: 'none',
+      scrollTrigger: { trigger: weeks, start: 'top 75%', end: 'bottom 55%', scrub: true }
+    });
+    gsap.utils.toArray('.week-item.unlocked').forEach(function (item) {
+      ScrollTrigger.create({ trigger: item, start: 'top 70%', once: true, onEnter: function () { item.classList.add('lit'); } });
+    });
+  }
+})();
+</script>
+</body>
+</html>

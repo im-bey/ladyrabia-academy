@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady Rabi'a Academy — The Membership · Your Space</title>
+<meta name="description" content="Your membership space — weekly teachings, reflections and practices.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory: #f9f5ed;
+    --ivory-warm: #f0ebe0;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --green-deep: #142e1f;
+    --gold: #b5860d;
+    --gold-light: #c9a84c;
+    --muted: #5a5240;
+  }
+
+  html { scroll-behavior: smooth; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  ::selection { background: rgba(181,134,13,.25); }
+
+  a { color: var(--gold); }
+  a:hover { color: var(--green); }
+
+  /* Loading overlay */
+  .dashboard-loading {
+    position: fixed;
+    inset: 0;
+    background: var(--ivory);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .dashboard-loading.hidden {
+    display: none;
+  }
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(201,168,76,.2);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .loading-text {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--muted);
+  }
+
+  /* ══ NAV ══ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+    background: rgba(249,245,237,.94);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(201,168,76,.15);
+    transition: box-shadow .3s ease;
+  }
+  .nav.scrolled { box-shadow: 0 10px 30px -18px rgba(27,60,40,.35); }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem 2rem; flex-wrap: wrap;
+    max-width: 1240px; margin: 0 auto;
+    padding: 1.5rem clamp(1.5rem, 5vw, 2.75rem);
+  }
+  .nav-logo {
+    font-size: 18px; font-family: 'Playfair Display', serif; font-style: italic;
+    letter-spacing: .01em;
+    color: var(--green); text-decoration: none; display: flex; align-items: center; gap: 12px;
+  }
+  .nav-logo svg { display: block; width: 22px; height: 22px; }
+  .nav-links { display: flex; align-items: center; gap: 2.2rem; }
+  .nav-link {
+    font-size: 16px; color: var(--muted); text-decoration: none;
+    position: relative; padding-bottom: 4px; transition: color .3s;
+  }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 0.5px; width: 100%;
+    background: var(--gold); transform: scaleX(0); transform-origin: right;
+    transition: transform .45s cubic-bezier(.22,1,.36,1);
+  }
+  .nav-link:hover { color: var(--green); }
+  .nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+  .nav-link.active { color: var(--green); font-style: italic; }
+  .nav-link.active::after { transform: scaleX(1); }
+  .nav-cta {
+    font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+    padding: 12px 26px; border: none; border-radius: 1px;
+    color: var(--ivory); background: var(--green);
+    font-family: 'EB Garamond', serif; cursor: pointer; text-decoration: none;
+    position: relative; overflow: hidden; transition: background .3s;
+  }
+  .nav-cta span { position: relative; z-index: 1; }
+  .nav-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.35) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .nav-cta:hover::before { transform: translateX(110%); transition: transform .8s ease; }
+
+  /* ══════════════════════════════════════════════
+     PROFILE HEADER — cover banner + avatar
+     ══════════════════════════════════════════════ */
+  .profile { position: relative; padding-top: 84px; }
+  .cover {
+    position: relative; height: clamp(180px, 26vw, 260px);
+    background: var(--ivory-warm); overflow: hidden;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+  }
+  .cover-tiles { position: absolute; inset: -40px; opacity: .5; pointer-events: none; }
+  .cover-arch {
+    position: absolute; left: 50%; bottom: -40%; transform: translateX(-50%);
+    width: min(520px, 80vw); height: auto; pointer-events: none; opacity: .8;
+  }
+  .cover-arch path { stroke: var(--gold-light); fill: none; }
+
+  .profile-bar {
+    max-width: 1080px; margin: 0 auto;
+    padding: 0 clamp(1.25rem, 5vw, 2rem);
+    display: flex; align-items: flex-end; gap: clamp(1rem, 3vw, 1.8rem);
+    flex-wrap: wrap;
+    transform: translateY(-46px); margin-bottom: -18px;
+  }
+  .avatar-wrap { position: relative; flex-shrink: 0; }
+  .avatar {
+    width: clamp(96px, 14vw, 128px); height: clamp(96px, 14vw, 128px);
+    border-radius: 50%;
+    background: var(--green);
+    border: 3px solid var(--ivory);
+    outline: 0.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 18px 36px -18px rgba(27,60,40,.45);
+    position: relative; overflow: hidden;
+  }
+  .avatar-monogram {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: clamp(34px, 5vw, 46px); color: var(--gold-light);
+  }
+  /* avatar upload affordance — visible only in edit mode.
+     TODO: WINDSURF — wire to a real file input + upload */
+  .avatar-upload {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: rgba(20,46,31,.55); backdrop-filter: blur(2px);
+    display: none; align-items: center; justify-content: center;
+    flex-direction: column; gap: 4px;
+    color: var(--ivory); font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    cursor: pointer; border: none; font-family: 'EB Garamond', serif;
+  }
+  .profile.is-editing .avatar-upload { display: flex; }
+  .avatar-upload svg { width: 18px; height: 18px; }
+  .avatar-upload svg path, .avatar-upload svg circle { fill: none; stroke: var(--ivory); stroke-width: 1; }
+
+  .identity { flex: 1; min-width: 220px; padding-bottom: 10px; }
+  .member-name {
+    font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400;
+    font-size: clamp(26px, 3.4vw, 36px); color: var(--green); line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  .member-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .member-since { font-size: 13.5px; font-style: italic; color: var(--muted); }
+  .tier-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold);
+    border: 0.5px solid var(--gold-light); border-radius: 1px;
+    padding: 6px 12px; background: rgba(181,134,13,.07);
+  }
+  .tier-badge svg { width: 10px; height: 10px; display: block; }
+
+  .profile-actions { display: flex; gap: 10px; padding-bottom: 12px; }
+  .btn-ghost {
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    padding: 11px 22px; border: 0.5px solid var(--gold-light); border-radius: 1px;
+    color: var(--muted); background: transparent;
+    font-family: 'EB Garamond', serif; cursor: pointer; text-decoration: none;
+    transition: color .3s, border-color .3s, background .3s;
+  }
+  .btn-ghost:hover { color: var(--green); border-color: var(--gold); background: rgba(181,134,13,.05); }
+  .btn-solid {
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    padding: 11px 22px; border: none; border-radius: 1px;
+    color: var(--ivory); background: var(--green);
+    font-family: 'EB Garamond', serif; cursor: pointer;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .btn-solid:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(27,60,40,.55); }
+
+  /* bio line under the bar */
+  .profile-bio {
+    max-width: 1080px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem) 0;
+  }
+  .member-bio {
+    font-size: 15.5px; font-style: italic; color: var(--muted); line-height: 1.8;
+    max-width: 560px; padding: 4px 0 0;
+  }
+
+  /* ══ EDIT MODE — inline editable fields (visual only) ══ */
+  .edit-fields { display: none; max-width: 560px; padding-top: 10px; }
+  .profile.is-editing .edit-fields { display: flex; flex-direction: column; gap: 1rem; }
+  .profile.is-editing .member-name, .profile.is-editing .member-bio { display: none; }
+  .profile.is-editing .edit-only { display: inline-flex; }
+  .profile.is-editing .view-only { display: none; }
+  .edit-only { display: none; }
+  .field { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+  .field label { font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
+  .field input, .field textarea {
+    border: 0.5px solid rgba(201,168,76,.6); padding: 12px 13px;
+    font-family: 'EB Garamond', serif; font-size: 15px; background: var(--ivory);
+    color: var(--ink); border-radius: 1px; outline: none; transition: border-color .3s;
+    width: 100%; resize: vertical;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--gold); }
+
+  /* ══════════════════════════════════════════════
+     LIBRARY — grouping tabs, filters, cards
+     ══════════════════════════════════════════════ */
+  .library { max-width: 1080px; margin: 0 auto; padding: 3.2rem clamp(1.25rem, 5vw, 2rem) 1rem; }
+  .library-head { text-align: center; margin-bottom: 2.2rem; }
+  .section-lbl {
+    font-size: 10.5px; letter-spacing: .3em;
+    text-transform: uppercase; color: var(--gold); display: block; margin-bottom: .9rem;
+  }
+  .section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 2.8vw, 32px);
+    font-weight: 400; font-style: italic; color: var(--green);
+    line-height: 1.4; text-wrap: pretty;
+  }
+
+  /* filters row: dropdown selects */
+  .filters {
+    display: flex; justify-content: center; align-items: center; gap: 10px 18px; flex-wrap: wrap;
+    margin: 1.6rem auto 0; padding-top: 1.6rem;
+    border-top: 0.5px solid rgba(201,168,76,.3);
+  }
+  .filter-lbl { font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); }
+  .filter-select-wrap { display: flex; align-items: center; gap: 10px; }
+  .filter-select {
+    font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: .04em;
+    color: var(--green); background: rgba(255,255,255,.6);
+    border: 0.5px solid rgba(201,168,76,.6); border-radius: 1px;
+    padding: 9px 34px 9px 14px; cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M 1 1 L 5 5 L 9 1' fill='none' stroke='%23b5860d' stroke-width='1.2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+    transition: border-color .3s, background-color .3s;
+  }
+  .filter-select:hover { border-color: var(--gold); background-color: rgba(255,255,255,.85); }
+  .filter-select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(181,134,13,.15); }
+  .filter-sep { width: 0.5px; height: 22px; background: rgba(201,168,76,.45); }
+
+  /* ══ CONTENT GROUPS + CARDS ══ */
+  .content-groups { padding-top: 2.6rem; }
+  .content-group { margin-bottom: 2.8rem; }
+  .group-title {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 1.3rem;
+  }
+  .group-title .rule { flex: 1; height: 0.5px; background: rgba(201,168,76,.35); }
+  .group-title .name {
+    font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400;
+    font-size: 19px; color: var(--green); white-space: nowrap;
+  }
+  .group-title .count { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+  /* ── the three card states: is-locked / is-current / is-complete ──
+     TODO: WINDSURF — real unlock logic sets these classes from member data;
+     everything below is styling only, keyed off the state class. */
+  .content-card {
+    position: relative; display: flex; gap: 16px; align-items: flex-start;
+    border: 0.5px solid var(--gold-light); border-radius: 1px;
+    background: rgba(255,255,255,.5);
+    padding: 1.4rem 1.5rem 1.3rem;
+    text-decoration: none;
+    transition: transform .5s cubic-bezier(.22,1,.36,1), box-shadow .5s, border-color .5s;
+  }
+  .content-card .c { position: absolute; width: 12px; height: 12px; border-color: var(--gold); opacity: 0; transition: opacity .5s; }
+  .content-card .c.tl { top: 4px; left: 4px; border-top: 1px solid; border-left: 1px solid; }
+  .content-card .c.tr { top: 4px; right: 4px; border-top: 1px solid; border-right: 1px solid; }
+  .content-card .c.bl { bottom: 4px; left: 4px; border-bottom: 1px solid; border-left: 1px solid; }
+  .content-card .c.br { bottom: 4px; right: 4px; border-bottom: 1px solid; border-right: 1px solid; }
+
+  .card-icon { width: 34px; height: 34px; flex-shrink: 0; display: block; margin-top: 2px; }
+  .card-icon polygon, .card-icon path, .card-icon rect, .card-icon circle, .card-icon line {
+    fill: none; stroke: var(--gold); stroke-width: .8;
+  }
+  .card-body { flex: 1; min-width: 0; }
+  .card-kicker { display: flex; align-items: baseline; gap: 10px; margin-bottom: 7px; flex-wrap: wrap; }
+  .card-week { font-size: 10.5px; letter-spacing: .22em; color: var(--gold); text-transform: uppercase; }
+  .card-type { font-size: 10.5px; letter-spacing: .18em; color: var(--muted); text-transform: uppercase; opacity: .75; }
+  .card-title {
+    font-family: 'Playfair Display', serif; font-size: 17.5px; font-style: italic;
+    color: var(--green); font-weight: 400; line-height: 1.45; margin-bottom: 7px;
+  }
+  .card-note { font-size: 13.5px; font-style: italic; color: var(--muted); line-height: 1.65; }
+  .card-state { position: absolute; top: 16px; right: 16px; display: flex; align-items: center; gap: 7px; }
+  .state-lbl { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; }
+  .state-glyph { width: 14px; height: 14px; display: block; }
+  .state-glyph path, .state-glyph rect, .state-glyph circle { fill: none; stroke-width: .9; }
+
+  /* CURRENT — the most prominent state */
+  .content-card.is-current { background: rgba(27,60,40,.055); border-color: var(--gold); box-shadow: 0 20px 40px -26px rgba(27,60,40,.4); }
+  .content-card.is-current .c { opacity: 1; }
+  .content-card.is-current:hover { transform: translateY(-4px); box-shadow: 0 28px 50px -26px rgba(27,60,40,.5); }
+  .content-card.is-current .state-lbl { color: var(--green); font-style: italic; }
+  .content-card.is-current .state-glyph path { stroke: var(--green); }
+  .card-cta {
+    display: inline-block; margin-top: 12px;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ivory); background: var(--green); border-radius: 1px;
+    padding: 10px 20px; text-decoration: none;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .card-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(27,60,40,.55); color: var(--ivory); }
+
+  /* COMPLETE — quiet gold confirmation */
+  .content-card.is-complete { background: rgba(255,255,255,.35); }
+  .content-card.is-complete:hover { transform: translateY(-3px); box-shadow: 0 22px 42px -26px rgba(27,60,40,.32); border-color: var(--gold); }
+  .content-card.is-complete .state-lbl { color: var(--gold); font-style: italic; }
+  .content-card.is-complete .state-glyph path { stroke: var(--gold); }
+  .content-card.is-complete .card-title { color: var(--green); }
+
+  /* LOCKED — intentional, premium stillness (not a broken state) */
+  .content-card.is-locked { background: rgba(255,255,255,.22); border-color: rgba(201,168,76,.4); cursor: default; }
+  .content-card.is-locked .card-icon, .content-card.is-locked .card-body > *:not(.card-unlock) { opacity: .45; }
+  .content-card.is-locked .state-lbl { color: var(--muted); opacity: .75; }
+  .content-card.is-locked .state-glyph path, .content-card.is-locked .state-glyph rect { stroke: var(--gold); }
+  .card-unlock {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    font-size: 12.5px; font-style: italic; color: var(--muted);
+  }
+  .card-unlock svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .card-unlock svg path, .card-unlock svg rect { fill: none; stroke: var(--gold); stroke-width: .9; }
+
+  /* ── YEAR VIEW — condensed month rows ── */
+  .year-rows { display: flex; flex-direction: column; gap: 12px; }
+  .year-row {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    border: 0.5px solid var(--gold-light); border-radius: 1px;
+    background: rgba(255,255,255,.5); padding: 1.1rem 1.4rem;
+    transition: border-color .4s, background .4s;
+  }
+  .year-row:hover { border-color: var(--gold); background: rgba(255,255,255,.7); }
+  .year-month {
+    font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400;
+    font-size: 17px; color: var(--green); min-width: 150px;
+  }
+  .year-theme { flex: 1; font-size: 13.5px; font-style: italic; color: var(--muted); min-width: 180px; line-height: 1.6; }
+  .year-dots { display: flex; gap: 10px; align-items: center; }
+  .year-dot { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid var(--gold); background: transparent; }
+  .year-dot.is-complete { background: var(--gold); }
+  .year-dot.is-current { background: var(--green); border-color: var(--green); }
+  .year-progress { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); min-width: 74px; text-align: right; }
+
+  .empty-note {
+    text-align: center; font-size: 14px; font-style: italic; color: var(--muted);
+    padding: 2.4rem 0 1rem; line-height: 1.8;
+  }
+
+  /* SVG divider */
+  .orn-divider { display: flex; justify-content: center; padding: 3rem 0 0; }
+  .orn-divider svg { width: min(380px, 70vw); height: auto; overflow: visible; }
+  .orn-divider path { stroke: var(--gold); fill: none; }
+  .orn-divider .diamond-fill { fill: var(--gold); stroke: none; }
+
+  /* ══ CLOSING ══ */
+  .closing { text-align: center; padding: 5rem 1.5rem 4.5rem; background: var(--green); position: relative; overflow: hidden; margin-top: 4.5rem; }
+  .closing-tiles { position: absolute; inset: 0; opacity: .1; pointer-events: none; }
+  .closing .orn-divider { padding: 0 0 2rem; }
+  .closing .orn-divider path { stroke: var(--gold-light); }
+  .closing .orn-divider .diamond-fill { fill: var(--gold-light); }
+  .closing p {
+    font-size: 17px; font-style: italic; color: rgba(249,245,237,.88);
+    line-height: 1.95; margin-bottom: 1rem; position: relative;
+  }
+  .closing-name { font-family: 'Playfair Display', serif; font-size: 19px; font-style: italic; color: var(--ivory); position: relative; }
+
+  .reveal { will-change: transform, opacity; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+  }
+
+  /* Mobile hamburger */
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; }
+  .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--green); transition: transform .3s, opacity .3s; }
+
+  @media (max-width: 900px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .nav-toggle { display: flex; }
+    .nav-links {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: flex-start; gap: 1.2rem;
+      background: rgba(249,245,237,.98); border-bottom: 0.5px solid rgba(201,168,76,.45);
+      padding: 1rem clamp(1.5rem, 5vw, 2.75rem) 1.5rem;
+      box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+    }
+    .nav.open .nav-links { display: flex; }
+    .nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  }
+  @media (max-width: 600px) {
+    .nav-links { gap: 1.1rem; }
+    .nav-link { font-size: 14px; }
+    .profile-bar { transform: translateY(-38px); }
+    .filter-select { padding: 8px 30px 8px 12px; font-size: 13px; }
+    .card-state { position: static; margin-top: 10px; }
+    .content-card { flex-direction: column; }
+    .year-progress { text-align: left; }
+  }
+</style>
+<template id="__bundler_thumbnail" data-bg-color="#f0ebe0">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#f0ebe0"/>
+    <circle cx="50" cy="40" r="16" fill="#1B3C28"/>
+    <path d="M 24 78 C 30 62 42 56 50 56 C 58 56 70 62 76 78" fill="none" stroke="#b5860d" stroke-width="2"/>
+  </svg>
+</template>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.8 15.2,8 8,15.2 0.8,8" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="8,4.6 11.4,8 8,11.4 4.6,8" fill="#b5860d"/></svg>
+      <span>Lady Rabi'a Academy</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="4-about-razia.html">About Razia</a>
+      <a class="nav-link active" href="3-membership.html">The Membership</a>
+      <a class="nav-link" href="2-opening-teaching.html">The Opening Teaching</a>
+      <a class="nav-link" href="#login" data-auth-toggle>Log in</a>
+    </div>
+  </div>
+</nav>
+<script src="config.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=10"></script>
+<script src="auth.js?v=2"></script>
+<script>
+(function () {
+  var nav = document.getElementById('nav');
+  var toggle = document.getElementById('navToggle');
+  if (!nav || !toggle) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════
+     PROFILE HEADER
+     TODO: WINDSURF — hydrate name, join date, tier,
+     bio and avatar from the member record (Outseta).
+     ══════════════════════════════════════════════ -->
+<header class="profile" id="profile" data-screen-label="Profile Header">
+  <div class="cover" id="cover">
+    <svg class="cover-tiles" id="coverTiles" aria-hidden="true" width="100%" height="100%">
+      <defs>
+        <pattern id="tile" width="56" height="56" patternUnits="userSpaceOnUse">
+          <g fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.35">
+            <polygon points="28,2 52,16 52,40 28,54 4,40 4,16"/>
+            <polygon points="28,10 46,20 46,36 28,46 10,36 10,20"/>
+            <line x1="28" y1="2" x2="28" y2="10"/><line x1="52" y1="16" x2="46" y2="20"/>
+            <line x1="52" y1="40" x2="46" y2="36"/><line x1="28" y1="54" x2="28" y2="46"/>
+            <line x1="4" y1="40" x2="10" y2="36"/><line x1="4" y1="16" x2="10" y2="20"/>
+          </g>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#tile)"/>
+    </svg>
+    <svg class="cover-arch" id="coverArch" viewBox="0 0 680 560" aria-hidden="true">
+      <path id="archOuter" stroke-width="1.1" d="M 60 560 L 60 300 C 60 195 105 130 240 78 C 300 55 325 38 340 6 C 355 38 380 55 440 78 C 575 130 620 195 620 300 L 620 560"/>
+      <path id="archInner" stroke-width="0.5" opacity="0.7" d="M 78 560 L 78 302 C 78 205 120 145 248 94 C 305 72 328 52 340 26 C 352 52 375 72 432 94 C 560 145 602 205 602 302 L 602 560"/>
+    </svg>
+  </div>
+
+  <div class="profile-bar" id="profileBar">
+    <div class="avatar-wrap">
+      <div class="avatar" data-member-avatar>
+        <!-- TODO: WINDSURF — swap monogram for the member's uploaded photo -->
+        <span class="avatar-monogram" id="avatarMonogram">A</span>
+      </div>
+      <button class="avatar-upload" type="button" aria-label="Change photo">
+        <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M 3 6 H 6 L 7.5 4 H 10.5 L 12 6 H 15 V 14 H 3 Z"/><circle cx="9" cy="10" r="2.4"/></svg>
+        <span>Change</span>
+      </button>
+    </div>
+
+    <div class="identity">
+      <h1 class="member-name" id="memberName" data-member-name></h1>
+      <div class="edit-fields" id="editFields">
+        <div class="field">
+          <label for="editName">Name</label>
+          <input id="editName" type="text" value="" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="editEmail">Email</label>
+          <input id="editEmail" type="email" value="" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="editBio">A line about you</label>
+          <textarea id="editBio" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="member-meta">
+        <span class="tier-badge" data-member-tier>
+          <svg viewBox="0 0 10 10" aria-hidden="true"><polygon points="5,0.5 9.5,5 5,9.5 0.5,5" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="5,3 7,5 5,7 3,5" fill="#b5860d"/></svg>
+          Founding member
+        </span>
+        <span class="member-since" data-member-since>In the work since May 2026</span>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <!-- TODO: WINDSURF — persist profile edits (name, email, bio, avatar) -->
+      <button class="btn-ghost view-only" type="button" id="editBtn">Edit profile</button>
+      <button class="btn-ghost edit-only" type="button" id="cancelBtn">Cancel</button>
+      <button class="btn-solid edit-only" type="button" id="saveBtn">Save changes</button>
+    </div>
+  </div>
+
+  <div class="profile-bio">
+    <p class="member-bio" id="memberBio" data-member-bio></p>
+  </div>
+</header>
+
+<!-- Loading overlay -->
+<div class="dashboard-loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading your dashboard...</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     CONTENT LIBRARY
+     ══════════════════════════════════════════════ -->
+<main class="library" data-screen-label="Content Library">
+  <div class="library-head">
+    <span class="section-lbl reveal">Your library</span>
+    <h2 class="section-heading reveal">One theme at a time, at your own pace.</h2>
+
+    <!-- filters: view + month + type dropdowns -->
+    <div class="filters reveal" id="filters">
+      <label class="filter-select-wrap">
+        <span class="filter-lbl">View</span>
+        <select class="filter-select" id="viewSelect" aria-label="Group content by">
+          <option value="week" selected>This month</option>
+          <option value="month">By month</option>
+          <option value="year">The year</option>
+        </select>
+      </label>
+      <span class="filter-sep" aria-hidden="true"></span>
+      <label class="filter-select-wrap">
+        <span class="filter-lbl">Month</span>
+        <select class="filter-select" id="monthSelect" aria-label="Filter by month">
+          <option value="all" selected>All months</option>
+        </select>
+      </label>
+      <span class="filter-sep" aria-hidden="true"></span>
+      <label class="filter-select-wrap">
+        <span class="filter-lbl">Type</span>
+        <select class="filter-select" id="typeSelect" aria-label="Filter by type">
+          <option value="all" selected>All types</option>
+          <option value="teaching">Teaching</option>
+          <option value="article">Article</option>
+          <option value="suhbah">Suhbah</option>
+          <option value="practice">Practice</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <!-- cards are rendered by JS from the CONTENT index below, so Windsurf can
+       swap the array for a real data source without touching the markup -->
+  <div class="content-groups" id="contentGroups" aria-live="polite"></div>
+</main>
+
+<!-- ══ CONTENT VIEWER MODAL ══ -->
+<div id="contentViewerModal" style="display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(20,46,31,.75); backdrop-filter: blur(8px);">
+  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; overflow-y: auto;">
+    <div id="viewerPanel" style="position: relative; width: 100%; max-width: 900px; background: var(--ivory); border: 0.5px solid var(--gold-light); border-radius: 1px; box-shadow: 0 40px 80px -30px rgba(20,46,31,.55); max-height: 90vh; display: flex; flex-direction: column;">
+      <div style="padding: 1.5rem 1.8rem; border-bottom: 0.5px solid rgba(201,168,76,.3); display: flex; align-items: center; justify-content: space-between;">
+        <h3 id="viewerTitle" style="font-family: 'Playfair Display', serif; font-size: 20px; font-style: italic; color: var(--green); margin: 0;"></h3>
+        <button onclick="closeContentViewer()" style="background: none; border: 0.5px solid var(--gold-light); color: var(--muted); padding: 8px 18px; border-radius: 1px; font-family: 'EB Garamond', serif; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer;">Close</button>
+      </div>
+      <div id="viewerTabs" style="display: none; padding: 0 1.8rem; border-bottom: 0.5px solid rgba(201,168,76,.3); background: rgba(255,255,255,.5);">
+        <button id="audioTab" onclick="switchViewerTab('audio')" style="background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 20px; font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all .3s;">Audio</button>
+        <button id="documentTab" onclick="switchViewerTab('document')" style="background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 20px; font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all .3s;">Document</button>
+      </div>
+      <div id="viewerContent" style="flex: 1; overflow-y: auto; padding: 2rem 1.8rem;">
+        <div id="audioViewer" style="display: none;">
+          <div style="text-align: center; padding: 2rem 0;">
+            <audio id="audioPlayer" controls controlsList="nodownload noplaybackrate" preload="none" style="width: 100%; max-width: 600px; outline: none;"></audio>
+          </div>
+        </div>
+        <div id="documentViewer" style="display: none;">
+          <div style="text-align: center; padding: 1rem 0;">
+            <button id="openPdfBtn" onclick="openPdfInNewWindow()" style="background: var(--green); color: var(--ivory); border: none; padding: 14px 28px; border-radius: 1px; font-family: 'EB Garamond', serif; font-size: 15px; letter-spacing: .08em; cursor: pointer; transition: transform .3s;">Open Document Viewer</button>
+            <p style="font-size: 13px; font-style: italic; color: var(--muted); margin-top: 1rem;">Document will open in a secure viewer window</p>
+          </div>
+        </div>
+        <div id="viewerLoading" style="text-align: center; padding: 3rem 0; font-size: 15px; font-style: italic; color: var(--muted);">Loading content...</div>
+        <div id="viewerError" style="display: none; text-align: center; padding: 3rem 0;">
+          <p style="font-size: 16px; color: var(--ink); margin-bottom: 1rem;">Failed to load content</p>
+          <button onclick="closeContentViewer()" style="background: var(--green); color: var(--ivory); border: none; padding: 12px 24px; border-radius: 1px; font-family: 'EB Garamond', serif; font-size: 14px; cursor: pointer;">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CLOSING ══ -->
+<footer class="closing" data-screen-label="Closing">
+  <svg class="closing-tiles" aria-hidden="true" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#tile)"/></svg>
+  <div class="orn-divider" data-orn>
+    <svg viewBox="0 0 380 24" aria-hidden="true">
+      <path class="draw" stroke-width="0.6" d="M 0 12 H 150"/>
+      <path class="draw" stroke-width="0.6" d="M 380 12 H 230"/>
+      <path class="draw" stroke-width="0.7" d="M 190 2 L 200 12 L 190 22 L 180 12 Z"/>
+      <path class="draw" stroke-width="0.5" d="M 190 6.5 L 195.5 12 L 190 17.5 L 184.5 12 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 163 12 L 168 7 L 173 12 L 168 17 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 207 12 L 212 7 L 217 12 L 212 17 Z"/>
+      <circle class="diamond-fill pop" cx="190" cy="12" r="1.6"/>
+    </svg>
+  </div>
+  <p class="reveal">The work is slow on purpose.<br>Depth and consistency — not volume.</p>
+  <span class="closing-name reveal">— Razia</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* nav background on scroll */
+  var nav = document.getElementById('nav');
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ══════════════════════════════════════════════
+     CONTENT INDEX — design-time data.
+     TODO: WINDSURF — replace with the real content index +
+     per-member unlock states (drip keyed by join date).
+     state: 'complete' | 'current' | 'locked'
+     ══════════════════════════════════════════════ */
+  var TYPE_ICONS = {
+    teaching: '<svg class="card-icon" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14"/><path d="M 15 12.5 L 23.5 18 L 15 23.5 Z"/></svg>',
+    article:  '<svg class="card-icon" viewBox="0 0 36 36" aria-hidden="true"><rect x="9" y="6" width="18" height="24"/><line x1="13" y1="13" x2="23" y2="13"/><line x1="13" y1="18" x2="23" y2="18"/><line x1="13" y1="23" x2="19" y2="23"/></svg>',
+    suhbah:   '<svg class="card-icon" viewBox="0 0 36 36" aria-hidden="true"><polygon points="14,8 24,18 14,28 4,18"/><polygon points="22,8 32,18 22,28 12,18"/></svg>',
+    practice: '<svg class="card-icon" viewBox="0 0 36 36" aria-hidden="true"><polygon points="18,4 32,18 18,32 4,18"/><path d="M 13 18 L 16.5 21.5 L 23 14.5"/></svg>'
+  };
+  var TYPE_NAMES = { teaching: 'Teaching', article: 'Article', suhbah: 'Suhbah', practice: 'Practice' };
+  var MONTH_NAMES = { '2026-05': 'May 2026', '2026-06': 'June 2026', '2026-07': 'July 2026' };
+  var MONTH_THEMES = {
+    '2026-05': 'The tongue — what our children hear in our tone',
+    '2026-06': 'Anger — the inheritance we did not ask for',
+    '2026-07': 'Gratitude — shukr as a household atmosphere'
+  };
+
+  var CONTENT = [];
+  var LOADED_MODULES = [];
+  
+  var DEMO_CONTENT = [
+    { id: 'may-w1', month: '2026-05', week: 1, type: 'teaching', state: 'complete', title: 'The main teaching — the tongue', note: 'One idea to sit with: what they hear in your tone becomes their inner voice.' },
+    { id: 'may-w2', month: '2026-05', week: 2, type: 'article',  state: 'complete', title: 'The written article — where the tradition meets the research', note: 'The prophetic guidance on speech, alongside what psychology observes about tone.' },
+    { id: 'may-w3', month: '2026-05', week: 3, type: 'suhbah',   state: 'complete', title: 'The suhbah — sitting with others in the work', note: 'Reflections from members on catching their tone mid-sentence.' },
+    { id: 'may-w4', month: '2026-05', week: 4, type: 'practice', state: 'complete', title: 'The practice — one week of noticing', note: 'A grounded exercise for the actual home, before the next month begins.' },
+
+    { id: 'jun-w1', month: '2026-06', week: 1, type: 'teaching', state: 'complete', title: 'The main teaching — anger', note: 'The inheritance we did not ask to carry, and the moment it passes on.' },
+    { id: 'jun-w2', month: '2026-06', week: 2, type: 'article',  state: 'complete', title: 'The written article — the nafs and the nervous system', note: 'Tazkiyah al-nafs and what the body does before the mind catches up.' },
+    { id: 'jun-w3', month: '2026-06', week: 3, type: 'suhbah',   state: 'complete', title: 'The suhbah — honest questions', note: 'On repair: what to do after the moment you wish you could take back.' },
+    { id: 'jun-w4', month: '2026-06', week: 4, type: 'practice', state: 'complete', title: 'The practice — the pause', note: 'One deliberate pause, practised daily, in the moment it is hardest.' },
+
+    { id: 'jul-w1', month: '2026-07', week: 1, type: 'teaching', state: 'complete', title: 'The main teaching — gratitude', note: 'Shukr as something a household breathes, not something it recites.' },
+    { id: 'jul-w2', month: '2026-07', week: 2, type: 'article',  state: 'current',  title: 'The written article — gratitude and the ordinary Tuesday', note: 'Where the ideas come from, and why they hold when the house is noisy.' },
+    { id: 'jul-w3', month: '2026-07', week: 3, type: 'suhbah',   state: 'locked',   title: 'The suhbah — this month\u2019s sitting', note: 'A space for reflection with others doing the same work.', unlockAfter: 'Week 2' },
+    { id: 'jul-w4', month: '2026-07', week: 4, type: 'practice', state: 'locked',   title: 'The practice — a week of shukr in the home', note: 'Grounded exercises to carry the theme into your actual week.', unlockAfter: 'Week 3' }
+  ];
+
+  var CURRENT_MONTH = new Date().toISOString().slice(0, 7);
+
+  /* ══ state ══ */
+  var grouping = 'week';           /* week | month | year */
+  var monthFilter = 'all';
+  var typeFilter = 'all';
+  var groupsEl = document.getElementById('contentGroups');
+
+  /* ══ card template ══ */
+  function stateGlyph(state) {
+    if (state === 'complete') return '<svg class="state-glyph" viewBox="0 0 14 14" aria-hidden="true"><path d="M 2.5 7.5 L 5.5 10.5 L 11.5 3.5"/></svg>';
+    if (state === 'current') return '<svg class="state-glyph" viewBox="0 0 14 14" aria-hidden="true"><path d="M 4 2.5 L 11 7 L 4 11.5 Z"/></svg>';
+    return '<svg class="state-glyph" viewBox="0 0 14 14" aria-hidden="true"><path d="M 4.5 6 V 4.2 C 4.5 2.8 5.6 1.8 7 1.8 C 8.4 1.8 9.5 2.8 9.5 4.2 V 6"/><rect x="3" y="6" width="8" height="6.2"/></svg>';
+  }
+  function stateLabel(state) {
+    return state === 'complete' ? 'Completed' : state === 'current' ? 'Available now' : 'Locked';
+  }
+
+  function cardHTML(item) {
+    var tag = item.state === 'locked' ? 'div' : 'a';
+    /* TODO: WINDSURF — real href per content item */
+    var href = item.state === 'locked' ? '' : ' href="#" onclick="return false"';
+    var html = '<' + tag + href + ' class="content-card is-' + item.state + '"' +
+      ' data-content-id="' + item.id + '" data-month="' + item.month + '" data-type="' + item.type + '" data-state="' + item.state + '">' +
+      '<div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>' +
+      TYPE_ICONS[item.type] +
+      '<div class="card-body">' +
+        '<div class="card-kicker"><span class="card-week">Week ' + item.week + '</span><span class="card-type">' + TYPE_NAMES[item.type] + '</span></div>' +
+        '<p class="card-title">' + item.title + '</p>' +
+        '<p class="card-note">' + item.note + '</p>' +
+        (item.state === 'current' ? '<span class="card-cta">Begin this week\u2019s work</span>' : '') +
+        (item.state === 'locked' ? '<span class="card-unlock"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M 4.5 6 V 4.2 C 4.5 2.8 5.6 1.8 7 1.8 C 8.4 1.8 9.5 2.8 9.5 4.2 V 6"/><rect x="3" y="6" width="8" height="6.2"/></svg>' + (item.unlockAfter || 'Locked') + '</span>' : '') +
+      '</div>' +
+      '<span class="card-state">' + stateGlyph(item.state) + '<span class="state-lbl">' + stateLabel(item.state) + '</span></span>' +
+      '</' + tag + '>';
+    return html;
+  }
+
+  /* ══ filtering ══ */
+  function matches(item) {
+    if (monthFilter !== 'all' && item.month !== monthFilter) return false;
+    if (typeFilter !== 'all' && item.type !== typeFilter) return false;
+    return true;
+  }
+
+  /* ══ renderers ══ */
+  function groupBlock(titleName, count, inner) {
+    return '<section class="content-group">' +
+      '<div class="group-title"><span class="name">' + titleName + '</span><span class="rule"></span><span class="count">' + count + '</span></div>' +
+      inner + '</section>';
+  }
+
+  function renderWeekView() {
+    var items = CONTENT.filter(function (i) { return i.month === CURRENT_MONTH && matches(i); });
+    if (!items.length) return emptyNote();
+    var cards = items.map(cardHTML).join('');
+    var done = CONTENT.filter(function (i) { return i.month === CURRENT_MONTH && i.state === 'complete'; }).length;
+    return groupBlock(MONTH_NAMES[CURRENT_MONTH] + ' — ' + MONTH_THEMES[CURRENT_MONTH], done + ' of 4 complete', '<div class="card-grid">' + cards + '</div>');
+  }
+
+  function getContentMonths() {
+    var months = [];
+    CONTENT.forEach(function (i) {
+      if (i.month && months.indexOf(i.month) === -1) months.push(i.month);
+    });
+    return months.sort();
+  }
+
+  function renderMonthView() {
+    var months = getContentMonths().reverse(); /* newest first */
+    var out = '';
+    months.forEach(function (m) {
+      if (monthFilter !== 'all' && m !== monthFilter) return;
+      var items = CONTENT.filter(function (i) { return i.month === m && matches(i); });
+      if (!items.length) return;
+      var done = CONTENT.filter(function (i) { return i.month === m && i.state === 'complete'; }).length;
+      out += groupBlock(MONTH_NAMES[m] + ' — ' + MONTH_THEMES[m], done + ' of ' + items.length + ' complete', '<div class="card-grid">' + items.map(cardHTML).join('') + '</div>');
+    });
+    return out || emptyNote();
+  }
+
+  function renderYearView() {
+    var months = getContentMonths();
+    var rows = '';
+    months.forEach(function (m) {
+      if (monthFilter !== 'all' && m !== monthFilter) return;
+      var items = CONTENT.filter(function (i) { return i.month === m; })
+        .filter(function (i) { return typeFilter === 'all' || i.type === typeFilter; });
+      if (!items.length) return;
+      var all = CONTENT.filter(function (i) { return i.month === m; });
+      var done = all.filter(function (i) { return i.state === 'complete'; }).length;
+      var dots = all.map(function (i) {
+        return '<span class="year-dot is-' + i.state + '" title="Week ' + i.week + ' — ' + stateLabel(i.state) + '"></span>';
+      }).join('');
+      rows += '<div class="year-row" data-month="' + m + '">' +
+        '<span class="year-month">' + MONTH_NAMES[m] + '</span>' +
+        '<span class="year-theme">' + MONTH_THEMES[m] + '</span>' +
+        '<span class="year-dots">' + dots + '</span>' +
+        '<span class="year-progress">' + done + ' / 4</span>' +
+      '</div>';
+    });
+    if (!rows) return emptyNote();
+    return groupBlock('2026', 'Year one', '<div class="year-rows">' + rows + '</div>');
+  }
+
+  function emptyNote() {
+    return '<p class="empty-note">Nothing here under those filters — the work is slow on purpose.<br>Try widening the month or type.</p>';
+  }
+
+  function render() {
+    // Auto-switch to month view with 'all' filter if week view is empty
+    if (grouping === 'week') {
+      var weekItems = CONTENT.filter(function (i) { return i.month === CURRENT_MONTH && matches(i); });
+      if (!weekItems.length && CONTENT.length > 0) {
+        grouping = 'month';
+        monthFilter = 'all';
+        
+        // Update UI to reflect the change
+        var vs = document.getElementById('viewSelect');
+        var ms = document.getElementById('monthSelect');
+        if (vs) vs.value = 'month';
+        if (ms) ms.value = 'all';
+      }
+    }
+    
+    groupsEl.innerHTML = grouping === 'week' ? renderWeekView() : grouping === 'month' ? renderMonthView() : renderYearView();
+    if (window.gsap && !reduced) {
+      gsap.from(groupsEl.querySelectorAll('.content-card, .year-row, .group-title'), {
+        y: 22, opacity: 0, duration: .7, ease: 'power3.out', stagger: .05, clearProps: 'all'
+      });
+    }
+  }
+
+  /* ══ filter dropdowns ══ */
+  var viewSelect = document.getElementById('viewSelect');
+  var monthSelect = document.getElementById('monthSelect');
+  var typeSelect = document.getElementById('typeSelect');
+
+  viewSelect.addEventListener('change', function () {
+    grouping = this.value;
+    render();
+  });
+  monthSelect.addEventListener('change', function () {
+    monthFilter = this.value;
+    render();
+  });
+  typeSelect.addEventListener('change', function () {
+    typeFilter = this.value;
+    render();
+  });
+
+  /* Populate month dropdown from actual content months */
+  function populateMonthFilter() {
+    var months = [];
+    CONTENT.forEach(function (i) {
+      if (i.month && months.indexOf(i.month) === -1) months.push(i.month);
+    });
+    months.sort();
+    
+    var current = monthSelect.value || 'all';
+    monthSelect.innerHTML = '<option value="all">All months</option>' +
+      months.map(function (m) {
+        var label = (typeof MONTH_NAMES !== 'undefined' && MONTH_NAMES[m]) ? MONTH_NAMES[m] : m;
+        return '<option value="' + m + '">' + label + '</option>';
+      }).join('');
+    
+    /* Restore selection if still valid */
+    if (current !== 'all' && months.indexOf(current) !== -1) {
+      monthSelect.value = current;
+    } else {
+      monthSelect.value = 'all';
+      monthFilter = 'all';
+    }
+  }
+
+  /* ══ edit profile mode (visual only) ══ */
+  var profile = document.getElementById('profile');
+  var nameEl = document.getElementById('memberName');
+  var bioEl = document.getElementById('memberBio');
+  var monogram = document.getElementById('avatarMonogram');
+  document.getElementById('editBtn').addEventListener('click', function () {
+    document.getElementById('editName').value = nameEl.textContent.trim();
+    document.getElementById('editBio').value = bioEl.textContent.trim();
+    profile.classList.add('is-editing');
+  });
+  document.getElementById('cancelBtn').addEventListener('click', function () {
+    profile.classList.remove('is-editing');
+  });
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    /* TODO: WINDSURF — persist to the member record; this only updates the view */
+    var newName = document.getElementById('editName').value.trim() || nameEl.textContent;
+    nameEl.textContent = newName;
+    bioEl.textContent = document.getElementById('editBio').value.trim();
+    monogram.textContent = newName.charAt(0).toUpperCase();
+    profile.classList.remove('is-editing');
+  });
+
+  /* ══ Load modules from Supabase ══ */
+  async function loadModulesFromSupabase() {
+    try {
+      console.log('[loadModulesFromSupabase] Fetching modules...');
+      var result = await window.SupabaseClient.getModulesForMembers();
+      
+      if (result.error) {
+        console.error('Failed to load modules:', result.error);
+        CONTENT = DEMO_CONTENT;
+        return;
+      }
+      
+      LOADED_MODULES = result.data || [];
+      console.log('[loadModulesFromSupabase] Loaded', LOADED_MODULES.length, 'modules from database');
+      
+      // Log week 1 modules specifically
+      var week1Modules = LOADED_MODULES.filter(m => m.week === 1);
+      console.log('[loadModulesFromSupabase] Week 1 modules:', week1Modules.length);
+      week1Modules.forEach(m => {
+        console.log('  -', m.slug, '| is_published:', m.is_published, '| is_disabled:', m.is_disabled);
+      });
+      
+      if (LOADED_MODULES.length === 0) {
+        console.warn('No modules loaded from Supabase, using demo content');
+        CONTENT = DEMO_CONTENT;
+        return;
+      }
+      
+      var monthsMap = {};
+      
+      CONTENT = LOADED_MODULES.map(function(module) {
+        var monthKey = module.month || (module.release_date ? module.release_date.slice(0, 7) : '2026-07');
+        
+        if (!monthsMap[monthKey]) {
+          var date = new Date(monthKey + '-01');
+          var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+          MONTH_NAMES[monthKey] = monthNames[date.getMonth()] + ' ' + date.getFullYear();
+          MONTH_THEMES[monthKey] = module.month_theme || 'Monthly theme';
+          monthsMap[monthKey] = true;
+        }
+        
+        return {
+          id: module.slug,
+          month: monthKey,
+          week: module.week,
+          type: module.type,
+          state: 'locked',
+          title: module.title,
+          note: module.note || '',
+          is_published: module.is_published,
+          is_force_published: module.is_force_published,
+          is_disabled: module.is_disabled,
+          release_date: module.release_date,
+          moduleData: module
+        };
+      });
+      
+      if (CONTENT.length > 0) {
+        var latestMonth = CONTENT[CONTENT.length - 1].month;
+        if (latestMonth) CURRENT_MONTH = latestMonth;
+      }
+      
+      console.log('Loaded', CONTENT.length, 'modules from Supabase');
+      
+    } catch (error) {
+      console.error('Error loading modules:', error);
+      CONTENT = DEMO_CONTENT;
+    }
+  }
+  
+  /* ══ Refresh content with completion-based unlock logic ══ */
+  async function refreshContent() {
+    var userData = await window.SupabaseClient.getCurrentUser();
+    if (!userData || !userData.user) {
+      // Not logged in - redirect to login
+      window.location.href = 'index.html';
+      return;
+    }
+    
+    // If this user is an admin, redirect them to the admin dashboard (bypass profile check)
+    if (userData.profile && userData.profile.role === 'admin') {
+      window.location.href = 'admin-dashboard.html';
+      return;
+    }
+    
+    // Skip profile completion check - removed as per requirements
+    
+    // Update profile display with user data
+    var nameEl = document.getElementById('memberName');
+    var monogramEl = document.getElementById('avatarMonogram');
+    var googleAvatar = (userData.user.user_metadata && (userData.user.user_metadata.avatar_url || userData.user.user_metadata.picture)) || null;
+    
+    if (userData.profile) {
+      if (userData.profile.name) {
+        var fullName = userData.profile.name + (userData.profile.surname ? ' ' + userData.profile.surname : '');
+        if (nameEl) nameEl.textContent = fullName;
+        if (monogramEl && !googleAvatar) monogramEl.textContent = userData.profile.name.charAt(0).toUpperCase();
+      }
+      
+      // Show admin indicator if user is admin
+      if (userData.profile.role === 'admin') {
+        var tierBadge = document.querySelector('[data-member-tier]');
+        if (tierBadge) {
+          tierBadge.innerHTML = '<svg viewBox="0 0 10 10" aria-hidden="true"><polygon points="5,0.5 9.5,5 5,9.5 0.5,5" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="5,3 7,5 5,7 3,5" fill="#b5860d"/></svg> Admin';
+        }
+      }
+    }
+    
+    // Swap monogram for Google profile picture when available
+    if (googleAvatar && monogramEl) {
+      var avatarImg = document.createElement('img');
+      avatarImg.src = googleAvatar;
+      avatarImg.alt = '';
+      avatarImg.referrerPolicy = 'no-referrer';
+      avatarImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; border-radius: inherit;';
+      monogramEl.style.overflow = 'hidden';
+      monogramEl.textContent = '';
+      monogramEl.appendChild(avatarImg);
+    }
+    
+    // Fallback name from Google metadata when profile row has no name yet
+    if (nameEl && !nameEl.textContent && userData.user.user_metadata && userData.user.user_metadata.full_name) {
+      nameEl.textContent = userData.user.user_metadata.full_name;
+      if (monogramEl && !googleAvatar) {
+        monogramEl.textContent = userData.user.user_metadata.full_name.charAt(0).toUpperCase();
+      }
+    }
+    
+    await loadModulesFromSupabase();
+    
+    var updatedContent = await window.SupabaseClient.getAvailableContent(userData.user.id, CONTENT);
+    
+    /* Update CONTENT array with new states */
+    updatedContent.forEach(function(updated) {
+      var existing = CONTENT.find(function(item) { return item.id === updated.id; });
+      if (existing) {
+        existing.state = updated.state;
+        existing.unlockAfter = updated.unlockAfter;
+        existing.status = updated.status;
+      }
+    });
+    
+    /* Re-render dashboard */
+    populateMonthFilter();
+    render();
+    
+    /* Re-attach card listeners */
+    setTimeout(attachCardListeners, 100);
+  }
+
+  /* ══ Content Viewer Modal Functions ══ */
+  var currentViewerModule = null;
+  var currentPdfPath = null;
+  
+  window.openContentViewer = async function(moduleId) {
+    var module = LOADED_MODULES.find(function(m) { return m.slug === moduleId; });
+    if (!module) return;
+    
+    currentViewerModule = module;
+    
+    var modal = document.getElementById('contentViewerModal');
+    var title = document.getElementById('viewerTitle');
+    var tabs = document.getElementById('viewerTabs');
+    var audioViewer = document.getElementById('audioViewer');
+    var documentViewer = document.getElementById('documentViewer');
+    var loading = document.getElementById('viewerLoading');
+    var error = document.getElementById('viewerError');
+    
+    title.textContent = module.title;
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    loading.style.display = 'block';
+    audioViewer.style.display = 'none';
+    documentViewer.style.display = 'none';
+    error.style.display = 'none';
+    
+    try {
+      var assets = await window.SupabaseClient.getSignedAssetsForModule(module);
+      
+      if (assets.error) {
+        throw new Error(assets.error.message || 'Failed to load content');
+      }
+      
+      var hasAudio = assets.data.audioUrl;
+      var hasPdf = assets.data.pdfUrl;
+      
+      if (!hasAudio && !hasPdf) {
+        throw new Error('No content available for this module');
+      }
+      
+      loading.style.display = 'none';
+      
+      if (hasAudio && hasPdf) {
+        tabs.style.display = 'block';
+        switchViewerTab('audio');
+        document.getElementById('audioPlayer').src = assets.data.audioUrl;
+        currentPdfPath = module.pdf_path;
+      } else if (hasAudio) {
+        tabs.style.display = 'none';
+        audioViewer.style.display = 'block';
+        document.getElementById('audioPlayer').src = assets.data.audioUrl;
+      } else if (hasPdf) {
+        tabs.style.display = 'none';
+        documentViewer.style.display = 'block';
+        currentPdfPath = module.pdf_path;
+      }
+      
+    } catch (err) {
+      console.error('Content viewer error:', err);
+      loading.style.display = 'none';
+      error.style.display = 'block';
+      error.querySelector('p').textContent = err.message || 'Failed to load content';
+    }
+  };
+  
+  window.switchViewerTab = function(tab) {
+    var audioTab = document.getElementById('audioTab');
+    var documentTab = document.getElementById('documentTab');
+    var audioViewer = document.getElementById('audioViewer');
+    var documentViewer = document.getElementById('documentViewer');
+    
+    if (tab === 'audio') {
+      audioTab.style.borderBottomColor = 'var(--gold)';
+      audioTab.style.color = 'var(--green)';
+      documentTab.style.borderBottomColor = 'transparent';
+      documentTab.style.color = 'var(--muted)';
+      audioViewer.style.display = 'block';
+      documentViewer.style.display = 'none';
+    } else {
+      documentTab.style.borderBottomColor = 'var(--gold)';
+      documentTab.style.color = 'var(--green)';
+      audioTab.style.borderBottomColor = 'transparent';
+      audioTab.style.color = 'var(--muted)';
+      documentViewer.style.display = 'block';
+      audioViewer.style.display = 'none';
+    }
+  };
+  
+  window.openPdfInNewWindow = function() {
+    if (currentPdfPath) {
+      var url = 'pdf-viewer.html?path=' + encodeURIComponent(currentPdfPath);
+      window.open(url, '_blank', 'width=1000,height=800');
+    }
+  };
+  
+  window.closeContentViewer = function() {
+    var modal = document.getElementById('contentViewerModal');
+    var audioPlayer = document.getElementById('audioPlayer');
+    
+    audioPlayer.pause();
+    audioPlayer.src = '';
+    currentViewerModule = null;
+    currentPdfPath = null;
+    
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+  
+  function attachCardListeners() {
+    document.querySelectorAll('.content-card[data-state="current"], .content-card[data-state="complete"]').forEach(function(card) {
+      card.addEventListener('click', function(e) {
+        e.preventDefault();
+        var moduleId = card.getAttribute('data-content-id');
+        if (moduleId) {
+          openContentViewer(moduleId);
+        }
+      });
+    });
+  }
+  
+  var viewerContainer = document.getElementById('audioViewer');
+  if (viewerContainer) {
+    viewerContainer.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  }
+
+  /* initial render */
+  render();
+  
+  /* Refresh content on load to compute unlock states and hide loading overlay */
+  function hideLoadingOverlay() {
+    var loadingOverlay = document.querySelector('.dashboard-loading');
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('hidden');
+    }
+  }
+
+  /* Failsafe: never let the overlay stick, even if init throws or hangs */
+  setTimeout(hideLoadingOverlay, 12000);
+
+  async function initDashboard() {
+    try {
+      await refreshContent();
+    } catch (e) {
+      console.error('Dashboard init failed:', e);
+    } finally {
+      hideLoadingOverlay();
+    }
+  }
+  initDashboard();
+
+  /* ══ GSAP page animations ══ */
+  if (!window.gsap || reduced) return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* profile header entrance: arch draws behind the cover, bar rises */
+  var archOuter = document.getElementById('archOuter');
+  var archInner = document.getElementById('archInner');
+  [archOuter, archInner].forEach(function (p) {
+    var len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+  });
+  var intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  intro
+    .to(archOuter, { strokeDashoffset: 0, duration: 2.2, ease: 'power2.inOut' }, 0)
+    .to(archInner, { strokeDashoffset: 0, duration: 2.2, ease: 'power2.inOut' }, 0.2)
+    .from('.avatar-wrap', { y: 26, opacity: 0, duration: .9 }, 0.35)
+    .from('.identity', { y: 22, opacity: 0, duration: .9 }, 0.5)
+    .from('.profile-actions', { y: 18, opacity: 0, duration: .8 }, 0.65)
+    .from('.member-bio', { y: 16, opacity: 0, duration: .8 }, 0.75);
+
+  /* cover tiles drift */
+  gsap.to('#coverTiles', { y: 40, ease: 'none', scrollTrigger: { trigger: '#cover', start: 'top top', end: 'bottom top', scrub: true } });
+
+  /* generic reveals */
+  gsap.utils.toArray('.reveal').forEach(function (el) {
+    gsap.from(el, {
+      y: 34, opacity: 0, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 86%', once: true }
+    });
+  });
+
+  /* ornamental divider in the footer */
+  gsap.utils.toArray('[data-orn]').forEach(function (orn) {
+    var paths = orn.querySelectorAll('path.draw');
+    paths.forEach(function (p) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+    });
+    var pop = orn.querySelector('.pop');
+    if (pop) gsap.set(pop, { scale: 0, transformOrigin: 'center' });
+    var tl = gsap.timeline({ scrollTrigger: { trigger: orn, start: 'top 88%', once: true } });
+    tl.to(paths, { strokeDashoffset: 0, duration: 1.3, ease: 'power2.inOut', stagger: .08 });
+    if (pop) tl.to(pop, { scale: 1, duration: .5, ease: 'back.out(3)' }, '-=.4');
+  });
+  /* Initial render */
+  render();
+  
+  /* ══ Wire up content cards to open lesson modal ══ */
+  function attachCardListeners() {
+    var cards = document.querySelectorAll('.content-card');
+    cards.forEach(function(card) {
+      if (card.dataset.state === 'locked') return; /* Don't attach to locked cards */
+      
+      card.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        /* Find the lesson data */
+        var lessonId = this.dataset.contentId;
+        var lessonData = CONTENT.find(function(item) { return item.id === lessonId; });
+        
+        if (!lessonData) {
+          console.error('[Dashboard] Click: no lesson data found for id:', lessonId);
+          return;
+        }
+        if (typeof window.openLessonModal !== 'function') {
+          console.error('[Dashboard] Click: window.openLessonModal is not available — lesson-modal.js may have failed to initialize. Check earlier console errors.');
+          return;
+        }
+
+        /* Build ordered navigation list from currently visible, non-locked cards */
+        var navIds = Array.from(document.querySelectorAll('.content-card[data-state="current"], .content-card[data-state="complete"]'))
+          .map(function(el) { return el.getAttribute('data-content-id'); });
+        var navigationList = navIds
+          .map(function(id) { return CONTENT.find(function(item) { return item.id === id; }); })
+          .filter(Boolean)
+          .map(function(item) {
+            return {
+              id: item.id,
+              week: item.week,
+              month: item.month,
+              type: item.type,
+              title: item.title,
+              description: item.note,
+              availability_status: item.state === 'locked' ? 'locked' : 'available',
+              status: item.state,
+              moduleData: item.moduleData
+            };
+          });
+        
+        /* Prepare lesson data for modal */
+        var modalData = {
+          id: lessonData.id,
+          week: lessonData.week,
+          month: lessonData.month,
+          type: lessonData.type,
+          title: lessonData.title,
+          description: lessonData.note,
+          availability_status: lessonData.state === 'locked' ? 'locked' : 'available',
+          status: lessonData.state,
+          moduleData: lessonData.moduleData,
+          navigationList: navigationList
+        };
+        
+        window.openLessonModal(modalData);
+      });
+    });
+  }
+  
+  /* Attach listeners after initial render */
+  setTimeout(attachCardListeners, 100);
+  
+  /* ══ Listen for lesson progress updates from modal ══ */
+  window.addEventListener('lessonProgressUpdated', async function(e) {
+    var detail = e.detail;
+    var lessonId = detail.lessonId;
+    var newStatus = detail.status;
+    
+    /* Refresh content to recompute unlock states */
+    await refreshContent();
+    
+    console.log('Dashboard synced: lesson', lessonId, 'is now', newStatus);
+  });
+})();
+</script>
+<script src="lesson-modal.js?v=5"></script>
+</body>
+</html>

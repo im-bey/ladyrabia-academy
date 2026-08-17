@@ -1,0 +1,4 @@
+# Generated for deployment tooling compatibility
+[build]
+  command = "node scripts/build.js"
+  publish = "."

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady Rabi'a Academy — Join the Membership</title>
+<meta name="description" content="Join the Lady Rabi'a Academy membership.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Lady Rabi'a Academy — Join the Membership">
+<meta property="og:description" content="Join the Lady Rabi'a Academy membership.">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory: #f9f5ed;
+    --ivory-warm: #f0ebe0;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --green-deep: #142e1f;
+    --gold: #b5860d;
+    --gold-light: #c9a84c;
+    --muted: #5a5240;
+  }
+
+  html { scroll-behavior: smooth; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    line-height: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  ::selection { background: rgba(181,134,13,.25); }
+
+  a { color: var(--gold); }
+  a:hover { color: var(--green); }
+
+  /* ══ NAV ══ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+    background: rgba(249,245,237,.94);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(201,168,76,.15);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem 2rem; flex-wrap: wrap;
+    max-width: 1240px; margin: 0 auto;
+    padding: 1.5rem clamp(1.5rem, 5vw, 2.75rem);
+  }
+  .nav-logo {
+    font-size: 18px; font-family: 'Playfair Display', serif; font-style: italic;
+    color: var(--green); text-decoration: none;
+  }
+  .nav-links { display: flex; align-items: center; gap: 2.2rem; }
+  .nav-link {
+    font-size: 16px; color: var(--muted); text-decoration: none;
+    transition: color .3s;
+  }
+  .nav-link:hover { color: var(--green); }
+
+  /* Mobile hamburger */
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; }
+  .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--green); transition: transform .3s, opacity .3s; }
+
+  @media (max-width: 900px) {
+    .nav-toggle { display: flex; }
+    .nav-links {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: flex-start; gap: 1.2rem;
+      background: rgba(249,245,237,.98); border-bottom: 0.5px solid rgba(201,168,76,.45);
+      padding: 1rem clamp(1.5rem, 5vw, 2.75rem) 1.5rem;
+      box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+    }
+    .nav.open .nav-links { display: flex; }
+    .nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  }
+
+  /* ══ SIGNUP SCENE ══ */
+  .signup {
+    flex: 1;
+    min-height: 100vh;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ivory-warm);
+    padding: 8.5rem 1.5rem 5rem;
+  }
+
+  .signup-panel {
+    position: relative; width: 100%; max-width: 480px;
+    background: var(--ivory);
+    border: 0.5px solid var(--gold-light);
+    border-radius: 1px;
+    padding: 2.6rem 2.3rem 2.4rem;
+    box-shadow: 0 40px 80px -30px rgba(20,46,31,.25);
+  }
+
+  .signup-panel .c {
+    position: absolute; width: 14px; height: 14px; border-color: var(--gold);
+  }
+  .signup-panel .c.tl { top: 5px; left: 5px; border-top: 1px solid; border-left: 1px solid; }
+  .signup-panel .c.tr { top: 5px; right: 5px; border-top: 1px solid; border-right: 1px solid; }
+  .signup-panel .c.bl { bottom: 5px; left: 5px; border-bottom: 1px solid; border-left: 1px solid; }
+  .signup-panel .c.br { bottom: 5px; right: 5px; border-bottom: 1px solid; border-right: 1px solid; }
+
+  .signup-header {
+    text-align: center;
+    margin-bottom: 1.6rem;
+  }
+
+  .section-lbl {
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: .7rem;
+  }
+
+  .signup-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--green);
+    line-height: 1.35;
+  }
+
+  .signup-orn {
+    display: flex;
+    justify-content: center;
+    margin-top: .9rem;
+  }
+
+  .signup-orn svg {
+    width: 120px;
+    height: auto;
+  }
+
+  .signup-orn path {
+    stroke: var(--gold);
+    fill: none;
+  }
+
+  .signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-fields {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .field label {
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .field input {
+    border: 0.5px solid rgba(201,168,76,.6);
+    padding: 13px 14px;
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    background: var(--ivory);
+    color: var(--ink);
+    border-radius: 1px;
+    outline: none;
+    transition: border-color .3s;
+    width: 100%;
+  }
+
+  .field input:focus {
+    border-color: var(--gold);
+  }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: var(--green);
+    color: var(--ivory);
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    letter-spacing: .08em;
+    padding: 15px 36px;
+    border: none;
+    cursor: pointer;
+    border-radius: 1px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -12px rgba(27,60,40,.55);
+  }
+
+  .btn-primary span {
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 0.5px;
+    background: rgba(201,168,76,.4);
+  }
+
+  .btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 13px 36px;
+    background: white;
+    border: 1px solid rgba(201,168,76,.6);
+    border-radius: 1px;
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .3s;
+  }
+
+  .btn-google:hover {
+    border-color: var(--gold);
+    background: var(--ivory-warm);
+  }
+
+  .signup-alt {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--muted);
+  }
+
+  .signup-alt a {
+    color: var(--gold);
+    text-decoration: none;
+    border-bottom: 0.5px solid rgba(201,168,76,.5);
+    transition: color .3s, border-color .3s;
+  }
+
+  .signup-alt a:hover {
+    color: var(--green);
+    border-color: var(--gold);
+  }
+
+  .error-message {
+    background: rgba(169,68,66,.1);
+    border: 1px solid rgba(169,68,66,.3);
+    color: #a94442;
+    padding: 12px 14px;
+    border-radius: 1px;
+    font-size: 14px;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  .error-message.show {
+    display: block;
+  }
+
+  .success-message {
+    background: rgba(27,60,40,.1);
+    border: 1px solid rgba(27,60,40,.3);
+    color: var(--green);
+    padding: 12px 14px;
+    border-radius: 1px;
+    font-size: 14px;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  .success-message.show {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">Lady Rabi'a Academy</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="4-about-razia.html">About Razia</a>
+      <a class="nav-link" href="3-membership.html">The Membership</a>
+      <a class="nav-link" href="#login">Log in</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ SIGNUP SCENE ══ -->
+<section class="signup">
+  <div class="signup-panel">
+    <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+    
+    <header class="signup-header">
+      <span class="section-lbl">Lady Rabi'a Academy</span>
+      <h1 class="signup-title">Join the Membership</h1>
+      <div class="signup-orn" aria-hidden="true">
+        <svg viewBox="0 0 120 12">
+          <path stroke-width="0.6" d="M 0 6 H 46"/>
+          <path stroke-width="0.6" d="M 120 6 H 74"/>
+          <path stroke-width="0.7" d="M 60 0.5 L 65.5 6 L 60 11.5 L 54.5 6 Z"/>
+        </svg>
+      </div>
+    </header>
+
+    <div id="errorMessage" class="error-message"></div>
+    <div id="successMessage" class="success-message"></div>
+
+    <form class="signup-form" id="signupForm">
+      <fieldset class="form-fields">
+        <div class="field">
+          <label for="name">Name *</label>
+          <input id="name" name="name" type="text" required autocomplete="given-name">
+        </div>
+        <div class="field">
+          <label for="surname">Surname *</label>
+          <input id="surname" name="surname" type="text" required autocomplete="family-name">
+        </div>
+        <div class="field">
+          <label for="email">Email *</label>
+          <input id="email" name="email" type="email" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="contactNumber">Contact Number *</label>
+          <input id="contactNumber" name="contactNumber" type="tel" required autocomplete="tel">
+        </div>
+        <div class="field">
+          <label for="password">Password *</label>
+          <input id="password" name="password" type="password" required autocomplete="new-password" minlength="8">
+        </div>
+        <div class="field">
+          <label for="confirmPassword">Confirm Password *</label>
+          <input id="confirmPassword" name="confirmPassword" type="password" required autocomplete="new-password" minlength="8">
+        </div>
+      </fieldset>
+      <button class="btn-primary" type="submit" id="submitBtn">
+        <span>Create Account</span>
+      </button>
+    </form>
+
+    <div class="divider">or</div>
+
+    <button class="btn-google" id="googleSignupBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+      </svg>
+      <span>Sign up with Google</span>
+    </button>
+
+    <p class="signup-alt">
+      Already have an account? <a href="#login">Log in</a>
+    </p>
+  </div>
+</section>
+
+<script>
+(function () {
+  var nav = document.getElementById('nav');
+  var toggle = document.getElementById('navToggle');
+  if (!nav || !toggle) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=10"></script>
+<script src="brevo-email-service.js?v=2"></script>
+<script src="login-modal.js?v=2"></script>
+
+<script>
+(function() {
+  var form = document.getElementById('signupForm');
+  var googleBtn = document.getElementById('googleSignupBtn');
+  var submitBtn = document.getElementById('submitBtn');
+  var errorMsg = document.getElementById('errorMessage');
+  var successMsg = document.getElementById('successMessage');
+
+  function showError(message) {
+    errorMsg.textContent = message;
+    errorMsg.classList.add('show');
+    successMsg.classList.remove('show');
+  }
+
+  function showSuccess(message) {
+    successMsg.textContent = message;
+    successMsg.classList.add('show');
+    errorMsg.classList.remove('show');
+  }
+
+  function hideMessages() {
+    errorMsg.classList.remove('show');
+    successMsg.classList.remove('show');
+  }
+
+  // Email/Password Signup
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    hideMessages();
+
+    var name = document.getElementById('name').value.trim();
+    var surname = document.getElementById('surname').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var contactNumber = document.getElementById('contactNumber').value.trim();
+    var password = document.getElementById('password').value;
+    var confirmPassword = document.getElementById('confirmPassword').value;
+
+    // Validation
+    if (!name || !surname || !email || !contactNumber || !password) {
+      showError('Please fill in all fields.');
+      return;
+    }
+
+    if (password.length < 8) {
+      showError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showError('Passwords do not match.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = 'Creating account...';
+
+    try {
+      var profileData = {
+        name: name,
+        surname: surname,
+        contactNumber: contactNumber
+      };
+
+      var result = await window.SupabaseClient.signUpWithEmail(email, password, profileData);
+
+      if (result.error) {
+        showError(result.error.message || 'Failed to create account. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = 'Create Account';
+        return;
+      }
+
+      // Show success message
+      showSuccess('Account created! Please check your email to verify your account.');
+      form.reset();
+      
+      // Redirect after 3 seconds
+      setTimeout(function() {
+        window.location.href = 'index.html';
+      }, 3000);
+
+    } catch (error) {
+      showError('An unexpected error occurred. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.querySelector('span').textContent = 'Create Account';
+    }
+  });
+
+  // Google OAuth Signup
+  googleBtn.addEventListener('click', async function() {
+    hideMessages();
+    
+    try {
+      var result = await window.SupabaseClient.signInWithGoogle();
+      
+      if (result.error) {
+        console.error('Google OAuth error:', result.error);
+        showError('Google sign-in failed: ' + (result.error.message || result.error.description || JSON.stringify(result.error)));
+      }
+      // OAuth will redirect automatically
+    } catch (error) {
+      console.error('Google OAuth exception:', error);
+      showError('An unexpected error occurred: ' + (error.message || error));
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

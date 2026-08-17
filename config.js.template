@@ -1,0 +1,38 @@
+/* ═══════════════════════════════════════════════
+   LADY RABI'A ACADEMY — RUNTIME CONFIGURATION
+   This template is processed by scripts/build.js at build time.
+   The generated config.js is what the browser loads.
+   Do NOT edit the generated config.js directly; edit this file
+   or the environment variables instead.
+   ═══════════════════════════════════════════════ */
+
+(function () {
+  'use strict';
+
+  window.LRA_CONFIG = {
+    supabase: {
+      url: '__SUPABASE_URL__',
+      anonKey: '__SUPABASE_ANON_KEY__',
+      publishableKey: '__SUPABASE_PUBLISHABLE_KEY__',
+      functionsUrl: '__SUPABASE_FUNCTIONS_URL__'
+    },
+    zulip: {
+      functionName: '__ZULIP_CHAT_FUNCTION_NAME__',
+      defaultStream: 'general'
+    },
+    outseta: {
+      domain: '__OUTSETA_DOMAIN__'
+    },
+    email: {
+      from: '__FROM_EMAIL__',
+      brevo: {
+        apiKey: '__BREVO_API_KEY__',
+        senderEmail: '__BREVO_SENDER_EMAIL__',
+        senderName: '__BREVO_SENDER_NAME__'
+      }
+    },
+    site: {
+      publicUrl: '__PUBLIC_SITE_URL__'
+    }
+  };
+})();

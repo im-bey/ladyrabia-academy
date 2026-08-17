@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady Rabi'a Academy — Complete Your Profile</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory: #f9f5ed;
+    --ivory-warm: #f0ebe0;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --green-deep: #142e1f;
+    --gold: #b5860d;
+    --gold-light: #c9a84c;
+    --muted: #5a5240;
+  }
+
+  html { scroll-behavior: smooth; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    line-height: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  ::selection { background: rgba(181,134,13,.25); }
+
+  /* ══ PROFILE SCENE ══ */
+  .profile-scene {
+    flex: 1;
+    min-height: 100vh;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ivory-warm);
+    padding: 5rem 1.5rem;
+  }
+
+  .profile-panel {
+    position: relative; width: 100%; max-width: 480px;
+    background: var(--ivory);
+    border: 0.5px solid var(--gold-light);
+    border-radius: 1px;
+    padding: 2.6rem 2.3rem 2.4rem;
+    box-shadow: 0 40px 80px -30px rgba(20,46,31,.25);
+  }
+
+  .profile-panel .c {
+    position: absolute; width: 14px; height: 14px; border-color: var(--gold);
+  }
+  .profile-panel .c.tl { top: 5px; left: 5px; border-top: 1px solid; border-left: 1px solid; }
+  .profile-panel .c.tr { top: 5px; right: 5px; border-top: 1px solid; border-right: 1px solid; }
+  .profile-panel .c.bl { bottom: 5px; left: 5px; border-bottom: 1px solid; border-left: 1px solid; }
+  .profile-panel .c.br { bottom: 5px; right: 5px; border-bottom: 1px solid; border-right: 1px solid; }
+
+  .profile-header {
+    text-align: center;
+    margin-bottom: 1.6rem;
+  }
+
+  .section-lbl {
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: .7rem;
+  }
+
+  .profile-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--green);
+    line-height: 1.35;
+    margin-bottom: 0.5rem;
+  }
+
+  .profile-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .profile-orn {
+    display: flex;
+    justify-content: center;
+    margin-top: .9rem;
+  }
+
+  .profile-orn svg {
+    width: 120px;
+    height: auto;
+  }
+
+  .profile-orn path {
+    stroke: var(--gold);
+    fill: none;
+  }
+
+  .profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-fields {
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .field label {
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .field input {
+    border: 0.5px solid rgba(201,168,76,.6);
+    padding: 13px 14px;
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    background: var(--ivory);
+    color: var(--ink);
+    border-radius: 1px;
+    outline: none;
+    transition: border-color .3s;
+    width: 100%;
+  }
+
+  .field input:focus {
+    border-color: var(--gold);
+  }
+
+  .field input:disabled {
+    background: var(--ivory-warm);
+    color: var(--muted);
+  }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: var(--green);
+    color: var(--ivory);
+    font-family: 'EB Garamond', serif;
+    font-size: 15px;
+    letter-spacing: .08em;
+    padding: 15px 36px;
+    border: none;
+    cursor: pointer;
+    border-radius: 1px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -12px rgba(27,60,40,.55);
+  }
+
+  .btn-primary span {
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .error-message {
+    background: rgba(169,68,66,.1);
+    border: 1px solid rgba(169,68,66,.3);
+    color: #a94442;
+    padding: 12px 14px;
+    border-radius: 1px;
+    font-size: 14px;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  .error-message.show {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<section class="profile-scene">
+  <div class="profile-panel">
+    <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+    
+    <header class="profile-header">
+      <span class="section-lbl">Lady Rabi'a Academy</span>
+      <h1 class="profile-title">Complete Your Profile</h1>
+      <p class="profile-desc">We need a few more details to set up your account.</p>
+      <div class="profile-orn" aria-hidden="true">
+        <svg viewBox="0 0 120 12">
+          <path stroke-width="0.6" d="M 0 6 H 46"/>
+          <path stroke-width="0.6" d="M 120 6 H 74"/>
+          <path stroke-width="0.7" d="M 60 0.5 L 65.5 6 L 60 11.5 L 54.5 6 Z"/>
+        </svg>
+      </div>
+    </header>
+
+    <div id="errorMessage" class="error-message"></div>
+
+    <form class="profile-form" id="profileForm">
+      <fieldset class="form-fields">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" disabled>
+        </div>
+        <div class="field">
+          <label for="name">Name *</label>
+          <input id="name" name="name" type="text" required autocomplete="given-name">
+        </div>
+        <div class="field">
+          <label for="surname">Surname *</label>
+          <input id="surname" name="surname" type="text" required autocomplete="family-name">
+        </div>
+        <div class="field">
+          <label for="contactNumber">Contact Number *</label>
+          <input id="contactNumber" name="contactNumber" type="tel" required autocomplete="tel">
+        </div>
+      </fieldset>
+      <button class="btn-primary" type="submit" id="submitBtn">
+        <span>Complete Profile</span>
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=10"></script>
+
+<script>
+(function() {
+  var form = document.getElementById('profileForm');
+  var submitBtn = document.getElementById('submitBtn');
+  var errorMsg = document.getElementById('errorMessage');
+
+  function showError(message) {
+    errorMsg.textContent = message;
+    errorMsg.classList.add('show');
+  }
+
+  function hideError() {
+    errorMsg.classList.remove('show');
+  }
+
+  // Load current user data
+  async function loadUserData() {
+    try {
+      var userData = await window.SupabaseClient.getCurrentUser();
+      
+      if (!userData || !userData.user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Populate email field
+      document.getElementById('email').value = userData.user.email;
+
+      // Pre-fill name from Google OAuth if available
+      if (userData.user.user_metadata) {
+        var metadata = userData.user.user_metadata;
+        
+        // Google provides full_name, sometimes given_name/family_name
+        if (metadata.full_name && !userData.profile?.name) {
+          var nameParts = metadata.full_name.split(' ');
+          if (nameParts.length > 0) {
+            document.getElementById('name').value = nameParts[0];
+          }
+          if (nameParts.length > 1) {
+            document.getElementById('surname').value = nameParts.slice(1).join(' ');
+          }
+        } else {
+          if (metadata.given_name) document.getElementById('name').value = metadata.given_name;
+          if (metadata.family_name) document.getElementById('surname').value = metadata.family_name;
+        }
+      }
+
+      // Pre-fill existing profile data if partially complete
+      if (userData.profile) {
+        if (userData.profile.name) document.getElementById('name').value = userData.profile.name;
+        if (userData.profile.surname) document.getElementById('surname').value = userData.profile.surname;
+        if (userData.profile.contact_number) document.getElementById('contactNumber').value = userData.profile.contact_number;
+      }
+
+      // Check if profile is already complete (has all required fields)
+      if (userData.profile && userData.profile.name && userData.profile.surname && userData.profile.contact_number) {
+        // Profile already complete, redirect to dashboard
+        var isAdmin = userData.profile.role === 'admin';
+        window.location.href = isAdmin ? 'admin-dashboard.html' : '3-membership-v2-dashboard.html';
+      }
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+      showError('Failed to load user data. Please try again.');
+    }
+  }
+
+  // Handle form submission
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    hideError();
+
+    var name = document.getElementById('name').value.trim();
+    var surname = document.getElementById('surname').value.trim();
+    var contactNumber = document.getElementById('contactNumber').value.trim();
+
+    if (!name || !surname || !contactNumber) {
+      showError('Please fill in all required fields.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = 'Saving...';
+
+    try {
+      var userData = await window.SupabaseClient.getCurrentUser();
+      
+      if (!userData || !userData.user) {
+        showError('Session expired. Please log in again.');
+        setTimeout(function() {
+          window.location.href = 'index.html';
+        }, 2000);
+        return;
+      }
+
+      var result = await window.SupabaseClient.updateUserProfile(userData.user.id, {
+        name: name,
+        surname: surname,
+        contactNumber: contactNumber
+      });
+
+      if (result.error) {
+        showError(result.error.message || 'Failed to update profile.');
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = 'Complete Profile';
+        return;
+      }
+
+      // Redirect based on role
+      var updatedUserData = await window.SupabaseClient.getCurrentUser();
+      var isAdmin = updatedUserData && updatedUserData.profile && updatedUserData.profile.role === 'admin';
+      window.location.href = isAdmin ? 'admin-dashboard.html' : '3-membership-v2-dashboard.html';
+
+    } catch (error) {
+      console.error('Profile update error:', error);
+      showError('An unexpected error occurred. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.querySelector('span').textContent = 'Complete Profile';
+    }
+  });
+
+  // Load user data on page load
+  loadUserData();
+})();
+</script>
+
+</body>
+</html>

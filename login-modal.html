@@ -1,0 +1,225 @@
+<!-- LOGIN MODAL SYSTEM -->
+<style>
+  /* MODAL STYLES */
+  .modal-layer { position: fixed; inset: 0; z-index: 200; display: none; }
+  .modal-layer.open { display: block; }
+  .modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(20,46,31,.55);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+  }
+  .modal-positioner {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem; overflow-y: auto;
+  }
+  .modal-panel {
+    position: relative;
+    width: 100%; max-width: 420px;
+    background: var(--ivory);
+    border: 0.5px solid var(--gold-light);
+    border-radius: 1px;
+    padding: 2.6rem 2.3rem 2.4rem;
+    box-shadow: 0 40px 80px -30px rgba(20,46,31,.55);
+    opacity: 0;
+    margin: auto;
+  }
+  .modal-panel .c { position: absolute; width: 14px; height: 14px; border-color: var(--gold); }
+  .modal-panel .c.tl { top: 5px; left: 5px; border-top: 1px solid; border-left: 1px solid; }
+  .modal-panel .c.tr { top: 5px; right: 5px; border-top: 1px solid; border-right: 1px solid; }
+  .modal-panel .c.bl { bottom: 5px; left: 5px; border-bottom: 1px solid; border-left: 1px solid; }
+  .modal-panel .c.br { bottom: 5px; right: 5px; border-bottom: 1px solid; border-right: 1px solid; }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    background: none; border: 0.5px solid transparent; border-radius: 50%;
+    color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer;
+    font-family: 'EB Garamond', serif;
+    transition: color .3s, border-color .3s;
+  }
+  .modal-close:hover { color: var(--green); border-color: var(--gold-light); }
+  .modal-header { text-align: center; margin-bottom: 1.6rem; }
+  .modal-header .section-lbl { margin-bottom: .7rem; }
+  .modal-title {
+    font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 400;
+    font-style: italic; color: var(--green); line-height: 1.35;
+  }
+  .modal-orn { display: flex; justify-content: center; margin-top: .9rem; }
+  .modal-orn svg { width: 120px; height: auto; overflow: visible; }
+  .modal-orn path { stroke: var(--gold); fill: none; }
+
+  .auth-form { display: flex; flex-direction: column; gap: 0; }
+  .form-fields { border: none; display: flex; flex-direction: column; gap: 1.1rem; margin-bottom: 1.5rem; }
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field label {
+    font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold);
+  }
+  .field input {
+    border: 0.5px solid rgba(201,168,76,.6); padding: 13px 14px;
+    font-family: 'EB Garamond', serif; font-size: 15px; background: var(--ivory);
+    color: var(--ink); border-radius: 1px; outline: none; transition: border-color .3s;
+    width: 100%;
+  }
+  .field input:focus { border-color: var(--gold); }
+  .modal-panel .btn-primary {
+    display: block; width: 100%; text-align: center;
+    background: var(--green); color: var(--ivory);
+    font-family: 'EB Garamond', serif; font-size: 15px; letter-spacing: .08em;
+    padding: 15px 36px; border: none; cursor: pointer; border-radius: 1px;
+    text-decoration: none; position: relative; overflow: hidden;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
+  }
+  .modal-panel .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(27,60,40,.55); }
+  .modal-panel .btn-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.4) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .modal-panel .btn-primary:hover::before { transform: translateX(110%); transition: transform .8s ease; }
+  .modal-panel .btn-primary span { position: relative; z-index: 1; }
+  .modal-alt { text-align: center; margin-top: 1.1rem; font-size: 13px; font-style: italic; }
+  .modal-alt a, .modal-alt button {
+    color: var(--muted); text-decoration: none; background: none; border: none; cursor: pointer;
+    font-family: 'EB Garamond', serif; font-size: 13px; font-style: italic; padding: 0;
+    border-bottom: 0.5px solid rgba(201,168,76,.5); transition: color .3s, border-color .3s;
+  }
+  .modal-alt a:hover, .modal-alt button:hover { color: var(--green); border-color: var(--gold); }
+</style>
+
+<div class="modal-layer" id="modal-login" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="modal-backdrop" data-modal-backdrop></div>
+  <div class="modal-positioner">
+    <div class="modal-panel">
+      <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+      <button class="modal-close" type="button" data-modal-close aria-label="Close">✕</button>
+      <header class="modal-header" data-modal-field>
+        <span class="section-lbl">Lady Rabi'a Academy</span>
+        <h2 class="modal-title" id="loginTitle">Log in</h2>
+        <div class="modal-orn" aria-hidden="true">
+          <svg viewBox="0 0 120 12">
+            <path stroke-width="0.6" d="M 0 6 H 46"/>
+            <path stroke-width="0.6" d="M 120 6 H 74"/>
+            <path stroke-width="0.7" d="M 60 0.5 L 65.5 6 L 60 11.5 L 54.5 6 Z"/>
+          </svg>
+        </div>
+      </header>
+
+      <div class="embed-mount">
+        <form class="auth-form" id="login-form" onsubmit="return false;">
+          <fieldset class="form-fields">
+            <div class="field" data-modal-field>
+              <label for="login-email">Email</label>
+              <input id="login-email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="field" data-modal-field>
+              <label for="login-password">Password</label>
+              <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+          </fieldset>
+          <button class="btn-primary" type="submit" data-modal-field><span>Log in</span></button>
+          <p class="modal-alt" data-modal-field><a href="forgot-password.html">Forgot password?</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var openLayer = null;
+  var activeTl = null;
+
+  function buildOpenTimeline(layer) {
+    if (!window.gsap) return null;
+    var backdrop = layer.querySelector('[data-modal-backdrop]');
+    var panel = layer.querySelector('.modal-panel');
+    var fields = layer.querySelectorAll('[data-modal-field]');
+    var tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+    tl.fromTo(backdrop, { opacity: 0 }, { opacity: 1, duration: .45, ease: 'power2.out' }, 0)
+      .fromTo(panel, { opacity: 0, scale: .96, y: 14 }, { opacity: 1, scale: 1, y: 0, duration: .55 }, .1)
+      .fromTo(fields, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: .6, stagger: .07 }, .28);
+    if (reduced) tl.timeScale(50);
+    return tl;
+  }
+
+  function openModal(name) {
+    var layer = document.getElementById('modal-' + name);
+    if (!layer) return;
+    if (openLayer) hardClose(openLayer);
+    openLayer = layer;
+    layer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (window.gsap) {
+      activeTl = buildOpenTimeline(layer);
+      if (activeTl) activeTl.play(0);
+    } else {
+      layer.querySelector('.modal-backdrop').style.opacity = '1';
+      layer.querySelector('.modal-panel').style.opacity = '1';
+    }
+  }
+
+  function closeModal() {
+    if (!openLayer) return;
+    var layer = openLayer;
+    openLayer = null;
+    if (activeTl) {
+      var tl = activeTl;
+      activeTl = null;
+      tl.timeScale(reduced ? 50 : 1.5);
+      tl.eventCallback('onReverseComplete', function() {
+        layer.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+      tl.reverse();
+    } else {
+      hardClose(layer);
+    }
+  }
+
+  function hardClose(layer) {
+    layer.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Close modal handlers
+  document.addEventListener('click', function(e) {
+    if (e.target.matches('[data-modal-close]') || e.target.matches('[data-modal-backdrop]')) {
+      e.preventDefault();
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && openLayer) closeModal();
+  });
+
+  // Open modal on #login hash or click
+  document.addEventListener('click', function(e) {
+    var target = e.target.closest('[href="#login"]');
+    if (target) {
+      e.preventDefault();
+      openModal('login');
+    }
+  });
+
+  if (location.hash === '#login' && !(window.LRAAuth && LRAAuth.signedIn())) {
+    setTimeout(function() { openModal('login'); }, 100);
+  }
+
+  // Handle login form submission
+  var loginForm = document.getElementById('login-form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (window.LRAAuth) LRAAuth.signIn();
+      if (openLayer) hardClose(openLayer);
+      if (window.LRAAuth) LRAAuth.refresh();
+      setTimeout(function() {
+        window.location.href = '3-membership-v2-dashboard.html';
+      }, 300);
+    });
+  }
+})();
+</script>

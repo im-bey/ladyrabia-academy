@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady Rabi'a Academy — About Razia</title>
+<meta name="description" content="About Razia — the voice behind Lady Rabi'a Academy. Islamic scholarship, academic psychology, and qualitative research brought into the ordinary life of your home.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Lady Rabi'a Academy — About Razia">
+<meta property="og:description" content="About Razia — the voice behind Lady Rabi'a Academy.">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory: #f9f5ed;
+    --ivory-warm: #f0ebe0;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --green-deep: #142e1f;
+    --gold: #b5860d;
+    --gold-light: #c9a84c;
+    --muted: #5a5240;
+  }
+
+  html { scroll-behavior: smooth; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  ::selection { background: rgba(181,134,13,.25); }
+
+  /* ══ NAV ══ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+    background: rgba(249,245,237,.94);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(201,168,76,.15);
+    transition: box-shadow .3s ease;
+  }
+  .nav.scrolled {
+    box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem 2rem; flex-wrap: wrap;
+    max-width: 1240px; margin: 0 auto;
+    padding: 1.5rem clamp(1.5rem, 5vw, 2.75rem);
+  }
+  .nav-logo {
+    font-size: 18px; font-family: 'Playfair Display', serif; font-style: italic;
+    letter-spacing: .01em;
+    color: var(--green); text-decoration: none; display: flex; align-items: center; gap: 12px;
+  }
+  .nav-logo svg { display: block; width: 22px; height: 22px; }
+  .nav-links { display: flex; align-items: center; gap: 2.2rem; }
+  .nav-link {
+    font-size: 16px; color: var(--muted); text-decoration: none;
+    position: relative; padding-bottom: 4px; transition: color .3s;
+  }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 0.5px; width: 100%;
+    background: var(--gold); transform: scaleX(0); transform-origin: right;
+    transition: transform .45s cubic-bezier(.22,1,.36,1);
+  }
+  .nav-link:hover { color: var(--green); }
+  .nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+  .nav-link.active { color: var(--green); font-style: italic; }
+  .nav-link.active::after { transform: scaleX(1); }
+  .nav-cta {
+    font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+    padding: 12px 26px; border: none; border-radius: 1px;
+    color: var(--ivory); background: var(--green);
+    font-family: 'EB Garamond', serif; cursor: pointer; text-decoration: none;
+    position: relative; overflow: hidden; transition: background .3s;
+  }
+  .nav-cta span { position: relative; z-index: 1; }
+  .nav-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.35) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .nav-cta:hover::before { transform: translateX(110%); transition: transform .8s ease; }
+
+  /* ══ HERO ══ */
+  .hero {
+    min-height: 72vh;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ivory-warm);
+    overflow: hidden;
+    text-align: center;
+    padding: 8rem 1.5rem 5rem;
+  }
+  .hero-tiles {
+    position: absolute; inset: -60px; opacity: .5; pointer-events: none;
+    will-change: transform;
+  }
+  .hero-arch {
+    position: absolute; left: 50%; top: 55%;
+    width: min(560px, 92vw); height: auto; pointer-events: none;
+    will-change: transform;
+  }
+  .hero-arch path { stroke: var(--gold-light); fill: none; }
+  .hero-content { position: relative; z-index: 2; max-width: 720px; }
+  .hero-label {
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--gold); display: block; margin-bottom: 1.4rem;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(30px, 4.2vw, 48px);
+    font-weight: 400; font-style: italic; line-height: 1.32;
+    color: var(--green); margin-bottom: 1.4rem;
+  }
+  .hero h1 .line { display: block; overflow: hidden; }
+  .hero h1 .line span { display: inline-block; }
+  .hero-sub {
+    font-size: clamp(16px, 1.5vw, 19px); line-height: 1.85; color: var(--muted);
+    font-style: italic; max-width: 460px; margin: 0 auto;
+  }
+
+  /* ══ BODY ══ */
+  .wrap { width: 100%; max-width: 680px; margin: 0 auto; padding: 0 clamp(1.25rem, 5vw, 2rem); }
+  .section { padding: 4.5rem 0 .5rem; }
+  .section-lbl {
+    text-align: center; font-size: 10.5px; letter-spacing: .3em;
+    text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 2rem;
+  }
+  .body-text { font-size: 17px; line-height: 2.02; color: var(--ink); margin-bottom: 1.3rem; text-wrap: pretty; }
+
+  .pull-quote { border-left: 2px solid var(--gold); padding: .7rem 1.4rem; margin: 2rem 0; }
+  .pull-quote p {
+    font-family: 'Playfair Display', serif; font-size: 19px; font-style: italic;
+    color: var(--green); line-height: 1.8; margin: 0; text-wrap: pretty;
+  }
+
+  /* SVG divider that draws itself */
+  .orn-divider { display: flex; justify-content: center; padding: 3rem 0 0; }
+  .orn-divider svg { width: min(380px, 70vw); height: auto; overflow: visible; }
+  .orn-divider path { stroke: var(--gold); fill: none; }
+  .orn-divider .diamond-fill { fill: var(--gold); stroke: none; }
+
+  /* ══ CREDENTIALS ══ */
+  .creds {
+    border: 0.5px solid var(--gold-light); border-radius: 1px;
+    background: rgba(255,255,255,.5);
+    padding: 1.8rem 1.9rem; margin-top: 2.4rem; position: relative;
+    transition: border-color .5s, box-shadow .5s;
+  }
+  .creds:hover { border-color: var(--gold); box-shadow: 0 24px 44px -28px rgba(27,60,40,.3); }
+  .creds .c { position: absolute; width: 14px; height: 14px; border-color: var(--gold); opacity: 0; transition: opacity .5s; }
+  .creds:hover .c { opacity: 1; }
+  .creds .c.tl { top: 5px; left: 5px; border-top: 1px solid; border-left: 1px solid; }
+  .creds .c.tr { top: 5px; right: 5px; border-top: 1px solid; border-right: 1px solid; }
+  .creds .c.bl { bottom: 5px; left: 5px; border-bottom: 1px solid; border-left: 1px solid; }
+  .creds .c.br { bottom: 5px; right: 5px; border-bottom: 1px solid; border-right: 1px solid; }
+  .cred-label { font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 1rem; }
+  .cred-row {
+    display: flex; gap: 14px; padding: .7rem 0;
+    border-bottom: 0.5px solid rgba(201,168,76,.3); font-size: 14.5px; line-height: 1.62; align-items: flex-start;
+  }
+  .cred-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .cred-inst { color: var(--muted); min-width: 180px; flex-shrink: 0; font-style: italic; }
+  .cred-detail { color: var(--ink); }
+
+  /* ══ CTA SCENE ══ */
+  .cta-scene { background: var(--ivory-warm); margin-top: 5.5rem; padding: 5.5rem 1.5rem; position: relative; overflow: hidden; }
+  .cta-scene .hero-tiles { opacity: .4; }
+  .cta-frame {
+    max-width: 560px; margin: 0 auto; text-align: center; position: relative;
+    padding: 3rem 2.2rem 2.8rem; z-index: 1; background: rgba(249,245,237,.75); border: 0.5px solid var(--gold-light);
+  }
+  .cta-frame-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .cta-frame-svg rect { fill: none; stroke: var(--gold); }
+  .cta-text { font-size: 16px; line-height: 1.85; color: var(--muted); font-style: italic; margin: 0 auto 1.8rem; max-width: 420px; }
+  .btn-primary {
+    display: inline-block; background: var(--green); color: var(--ivory);
+    font-family: 'EB Garamond', serif; font-size: 15px; letter-spacing: .08em;
+    padding: 15px 36px; border: none; cursor: pointer; border-radius: 1px;
+    text-decoration: none; position: relative; overflow: hidden;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(27,60,40,.55); }
+  .btn-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(201,168,76,.4) 50%, transparent 60%);
+    transform: translateX(-110%);
+  }
+  .btn-primary:hover::before { transform: translateX(110%); transition: transform .8s ease; }
+  .btn-primary span { position: relative; z-index: 1; }
+  .cta-alt { font-size: 13px; font-style: italic; margin-top: 1rem; }
+  .cta-alt a { color: var(--muted); text-decoration: none; border-bottom: 0.5px solid rgba(201,168,76,.5); transition: color .3s, border-color .3s; }
+  .cta-alt a:hover { color: var(--green); border-color: var(--gold); }
+
+  /* ══ CLOSING ══ */
+  .closing { text-align: center; padding: 5rem 1.5rem 4.5rem; background: var(--green); position: relative; overflow: hidden; }
+  .closing-tiles { position: absolute; inset: 0; opacity: .1; pointer-events: none; }
+  .closing .orn-divider { padding: 0 0 2rem; }
+  .closing .orn-divider path { stroke: var(--gold-light); }
+  .closing .orn-divider .diamond-fill { fill: var(--gold-light); }
+  .closing p {
+    font-size: 17px; font-style: italic; color: rgba(249,245,237,.88);
+    line-height: 1.95; margin-bottom: 1rem; position: relative;
+  }
+  .closing-name { font-family: 'Playfair Display', serif; font-size: 19px; font-style: italic; color: var(--ivory); position: relative; }
+
+  .reveal { will-change: transform, opacity; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+  }
+
+  /* Mobile hamburger */
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; }
+  .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--green); transition: transform .3s, opacity .3s; }
+
+  @media (max-width: 900px) {
+    .nav-toggle { display: flex; }
+    .nav-links {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: flex-start; gap: 1.2rem;
+      background: rgba(249,245,237,.98); border-bottom: 0.5px solid rgba(201,168,76,.45);
+      padding: 1rem clamp(1.5rem, 5vw, 2.75rem) 1.5rem;
+      box-shadow: 0 10px 30px -18px rgba(27,60,40,.35);
+    }
+    .nav.open .nav-links { display: flex; }
+    .nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  }
+
+  @media (max-width: 720px) {
+    .nav-links { gap: 1.1rem; }
+    .nav-link { font-size: 14px; }
+    .hero { padding-top: 8.5rem; }
+    .cred-row { flex-direction: column; gap: 2px; }
+    .cred-inst { min-width: auto; }
+  }
+</style>
+<template id="__bundler_thumbnail" data-bg-color="#f0ebe0">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#f0ebe0"/>
+    <polygon points="50,20 80,50 50,80 20,50" fill="none" stroke="#b5860d" stroke-width="1.5"/>
+    <polygon points="50,32 68,50 50,68 32,50" fill="#b5860d"/>
+  </svg>
+</template>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.8 15.2,8 8,15.2 0.8,8" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="8,4.6 11.4,8 8,11.4 4.6,8" fill="#b5860d"/></svg>
+      <span>Lady Rabi'a Academy</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link active" href="4-about-razia.html">About Razia</a>
+      <a class="nav-link" href="3-membership.html">The Membership</a>
+      <a class="nav-link" href="2-opening-teaching.html">The Opening Teaching</a>
+      <a class="nav-link" href="#login" data-auth-toggle>Log in / Sign up</a>
+      <a class="nav-cta" href="2-opening-teaching.html"><span>Request your seat</span></a>
+    </div>
+  </div>
+</nav>
+<script src="auth.js?v=2"></script>
+<script>
+(function () {
+  var nav = document.getElementById('nav');
+  var toggle = document.getElementById('navToggle');
+  if (!nav || !toggle) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+
+<!-- ══ HERO ══ -->
+<header class="hero" id="hero" data-screen-label="Hero">
+  <svg class="hero-tiles" id="heroTiles" aria-hidden="true" width="100%" height="100%">
+    <defs>
+      <pattern id="tile" width="56" height="56" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.35">
+          <polygon points="28,2 52,16 52,40 28,54 4,40 4,16"/>
+          <polygon points="28,10 46,20 46,36 28,46 10,36 10,20"/>
+          <line x1="28" y1="2" x2="28" y2="10"/><line x1="52" y1="16" x2="46" y2="20"/>
+          <line x1="52" y1="40" x2="46" y2="36"/><line x1="28" y1="54" x2="28" y2="46"/>
+          <line x1="4" y1="40" x2="10" y2="36"/><line x1="4" y1="16" x2="10" y2="20"/>
+        </g>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#tile)"/>
+  </svg>
+
+  <svg class="hero-arch" id="heroArch" viewBox="0 0 680 560" aria-hidden="true">
+    <path id="archOuter" stroke-width="1.1" d="M 60 560 L 60 300 C 60 195 105 130 240 78 C 300 55 325 38 340 6 C 355 38 380 55 440 78 C 575 130 620 195 620 300 L 620 560"/>
+    <path id="archInner" stroke-width="0.5" opacity="0.7" d="M 78 560 L 78 302 C 78 205 120 145 248 94 C 305 72 328 52 340 26 C 352 52 375 72 432 94 C 560 145 602 205 602 302 L 602 560"/>
+    <polygon id="archFinial" points="340,-14 348,-4 340,6 332,-4" fill="#b5860d" stroke="none" opacity="0"/>
+  </svg>
+
+  <div class="hero-content">
+    <span class="hero-label reveal" id="heroLabel">About Razia</span>
+    <h1 id="heroTitle">
+      <span class="line"><span>One conversation.</span></span>
+      <span class="line"><span>One sacrifice.</span></span>
+      <span class="line"><span>Years of work.</span></span>
+    </h1>
+    <p class="hero-sub reveal" id="heroSub">How Lady Rabi'a Academy came to be — and why it could not have been anything else.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ══ THE QUESTION ══ -->
+  <section class="section" data-screen-label="The Question">
+    <p class="body-text reveal">I have always been interested in why people do what they do — not in a vague, inspirational quote kind of way, but in the ordinary, particular way that matters: why people repeat the same patterns across generations, why families work the way they do, why we say we believe certain things and then live in ways that do not always match those beliefs, and why we know better, and still do the thing. That question has followed me for most of my life, and it is, in the end, what this entire space is built upon.</p>
+    <p class="body-text reveal">I began with about a year of formal study before moving into corporate work — a path I did not expect to stay on indefinitely, but one that taught me more than I anticipated. I learned how to handle large sums of money, work within systems, follow processes under pressure, and sit with people in moments of disappointment or uncertainty. What it also made clear, over time, was that I was not built for work that only engaged the surface of things, and that something in me was always reaching for a deeper account of what was actually happening in the lives of the people around me.</p>
+    <p class="body-text reveal">Then I fell pregnant, and everything shifted.</p>
+    <div class="pull-quote reveal"><p>"We only get one chance to do this. We need to break the cycle." — Yaseen</p></div>
+    <p class="body-text reveal">One evening my husband Yaseen said those two sentences, and I have never looked at parenting the same way since. We both came from families where parenting had been difficult, where there were patterns we had lived through and carried in our bodies without fully naming them, and where the weight of what was being asked of us had never quite been spoken aloud before that moment. Until then, I do not think I had fully understood that a child is not a project you can restart when you realise you have made a mess — that there is no practice round, no rehearsal, and no little button that says try again, but with more emotional maturity this time.</p>
+    <p class="body-text reveal">That conversation made something very clear to me: if we wanted to raise our daughter differently, we had to be willing to become different in the process. And so, with everything that required, I left my job and stayed home to raise her — not as a romantic or soft-focus decision, but as a serious one, made because we understood that breaking a cycle would require something more than good intentions.</p>
+  </section>
+
+  <div class="orn-divider" data-orn>
+    <svg viewBox="0 0 380 24" aria-hidden="true">
+      <path class="draw" stroke-width="0.6" d="M 0 12 H 150"/>
+      <path class="draw" stroke-width="0.6" d="M 380 12 H 230"/>
+      <path class="draw" stroke-width="0.7" d="M 190 2 L 200 12 L 190 22 L 180 12 Z"/>
+      <path class="draw" stroke-width="0.5" d="M 190 6.5 L 195.5 12 L 190 17.5 L 184.5 12 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 163 12 L 168 7 L 173 12 L 168 17 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 207 12 L 212 7 L 217 12 L 212 17 Z"/>
+      <circle class="diamond-fill pop" cx="190" cy="12" r="1.6"/>
+    </svg>
+  </div>
+
+  <!-- ══ THE STUDY ══ -->
+  <section class="section" data-screen-label="The Study">
+    <span class="section-lbl reveal">The study</span>
+    <p class="body-text reveal">Being at home did not automatically make me the kind of parent I wanted to be — and that was, perhaps, the most important thing I learned in those early years. Love helped, but love did not magically reorganise my nervous system or remove the triggers I had not yet named. Good intentions did not make me calm when a small person was having a very big feeling in the middle of an ordinary Tuesday.</p>
+    <p class="body-text reveal">And so I went back to study — seriously, formally, with the intention of understanding not just what to do, but why human beings, and Muslim human beings in particular, so often live at a distance from the values they claim to hold. I studied Psychology, then Religion Studies, and eventually completed a Master's degree at the University of Johannesburg researching how Muslims in Cape Town understand and live out Islamic dietary teachings in the texture of everyday life. The research looked at food, but what it taught me was something far wider: how to pay careful attention to the gap between what people say they believe and what actually takes shape in daily practice.</p>
+    <p class="body-text reveal">That question is at the heart of everything in this space. It is one thing to say that Islam teaches mercy, patience, adab, taqwa, and accountability before Allah. It is another thing entirely to ask what those words look like on an ordinary evening when your child is rude, you are tired, the house is noisy, and your own childhood comes back through your tone before you have even had a chance to think. That is where the real work sits — not in the theory alone, but in the lived moment, in the nafs that is either being trained or is running the household unchecked.</p>
+    <p class="body-text reveal">Alongside my academic studies, I studied Islamic thought, legal theory, Qur'anic exegesis, and Islamic psychology through structured programmes at Al-Madina Institute and Al Balagh Academy — years of formal study that gave me language for things I had already been wrestling with privately: the self and its diseases, responsibility before Allah, the formation of character, spiritual discipline, and the daily, unglamorous work of becoming less reactive and more accountable in the sight of the One who sees what no one else does.</p>
+  </section>
+
+  <div class="orn-divider" data-orn>
+    <svg viewBox="0 0 380 24" aria-hidden="true">
+      <path class="draw" stroke-width="0.6" d="M 0 12 H 150"/>
+      <path class="draw" stroke-width="0.6" d="M 380 12 H 230"/>
+      <path class="draw" stroke-width="0.7" d="M 190 2 L 200 12 L 190 22 L 180 12 Z"/>
+      <path class="draw" stroke-width="0.5" d="M 190 6.5 L 195.5 12 L 190 17.5 L 184.5 12 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 163 12 L 168 7 L 173 12 L 168 17 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 207 12 L 212 7 L 217 12 L 212 17 Z"/>
+      <circle class="diamond-fill pop" cx="190" cy="12" r="1.6"/>
+    </svg>
+  </div>
+
+  <!-- ══ WHAT ALLAH SENT ══ -->
+  <section class="section" data-screen-label="What Allah Sent Instead of a Plan">
+    <span class="section-lbl reveal">What Allah sent instead of a plan</span>
+    <p class="body-text reveal">Somewhere in the middle of all of this, life became considerably less neat — which is, as any student of the tradition knows, precisely when the real education tends to begin. We moved cities, and then we moved continents entirely, arriving somewhere new with new weather, new systems, new supermarkets, new forms to fill in, and new levels of administrative complexity that felt personally designed to test my sabr at its foundations.</p>
+    <p class="body-text reveal">The routines I had built with care fell apart, and while that was not pleasant, it turned out to be deeply useful — because it forced me to stop reading about tawakkul and actually practise it, to stop theorising about patience and sit inside it without knowing when it would end, and to discover that spiritual growth is not always found in beautiful moments of contemplation but sometimes arrives because the Wi-Fi is not working, the child needs something, the paperwork is confusing, the house is cold, and you still have to decide — before Maghrib — what kind of person you are going to be.</p>
+    <div class="pull-quote reveal"><p>You can only guide your child to a place you yourself have visited. And sometimes Allah arranges the journey without asking whether you feel ready.</p></div>
+  </section>
+
+  <div class="orn-divider" data-orn>
+    <svg viewBox="0 0 380 24" aria-hidden="true">
+      <path class="draw" stroke-width="0.6" d="M 0 12 H 150"/>
+      <path class="draw" stroke-width="0.6" d="M 380 12 H 230"/>
+      <path class="draw" stroke-width="0.7" d="M 190 2 L 200 12 L 190 22 L 180 12 Z"/>
+      <path class="draw" stroke-width="0.5" d="M 190 6.5 L 195.5 12 L 190 17.5 L 184.5 12 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 163 12 L 168 7 L 173 12 L 168 17 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 207 12 L 212 7 L 217 12 L 212 17 Z"/>
+      <circle class="diamond-fill pop" cx="190" cy="12" r="1.6"/>
+    </svg>
+  </div>
+
+  <!-- ══ WHAT I BRING ══ -->
+  <section class="section" data-screen-label="What I Bring" style="padding-bottom:4rem">
+    <span class="section-lbl reveal">What I bring</span>
+    <p class="body-text reveal">What I bring to this space is not only academic training, though that training matters and I take it seriously — I value careful thinking, I value research, and I have very little patience for things that sound nice on Instagram but cannot survive contact with a real Tuesday. What I bring, more than anything, is that I take this work seriously as inner work, as moral work, as the kind of accountability before Allah that does not end when the child goes to bed but continues in the quality of who you are becoming while they are watching.</p>
+    <p class="body-text reveal">I do not see what happens in this space as a set of techniques for managing children into being more convenient. I see it as a serious engagement with the amanah that Allah has placed in your hands — and with the question of whether the person your child is growing up alongside is the person you actually want to be, or simply the person your history made you by default.</p>
+
+    <div class="creds reveal">
+      <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+      <span class="cred-label">Formation and training</span>
+      <div class="cred-row"><span class="cred-inst">University of Johannesburg</span><span class="cred-detail">Master's degree, Religion Studies</span></div>
+      <div class="cred-row"><span class="cred-inst">University of Cape Town · UWC</span><span class="cred-detail">Academic training in Psychology</span></div>
+      <div class="cred-row"><span class="cred-inst">Al-Madina Institute</span><span class="cred-detail">Islamic sciences, legal theory, Qur'anic exegesis</span></div>
+      <div class="cred-row"><span class="cred-inst">Al Balagh Academy</span><span class="cred-detail">Islamic psychology, prophetic tradition, tazkiyah al-nafs</span></div>
+    </div>
+  </section>
+</div>
+
+<!-- ══ CTA ══ -->
+<section class="cta-scene" data-screen-label="Begin">
+  <svg class="hero-tiles" aria-hidden="true" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#tile)"/></svg>
+  <div class="cta-frame" id="ctaFrame">
+    <svg class="cta-frame-svg" id="ctaFrameSvg" aria-hidden="true">
+      <rect class="draw-frame" stroke-width="0.9"/>
+      <rect class="draw-frame" stroke-width="0.4" opacity="0.6"/>
+    </svg>
+    <span class="section-lbl" style="margin-bottom:1rem">Begin here</span>
+    <p class="cta-text">If this is the kind of space you have been looking for, begin with the Opening Teaching — a recording delivered to your inbox, bi idhnillah, for those who want to hear the work before they commit to it.</p>
+    <a class="btn-primary" href="2-opening-teaching.html"><span>Request your seat at the Opening Teaching ↗</span></a>
+    <p class="cta-alt"><a href="3-membership.html">or explore the membership · £25 a month</a></p>
+  </div>
+</section>
+
+<!-- ══ CLOSING ══ -->
+<footer class="closing" data-screen-label="Closing">
+  <svg class="closing-tiles" aria-hidden="true" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#tile)"/></svg>
+  <div class="orn-divider" data-orn>
+    <svg viewBox="0 0 380 24" aria-hidden="true">
+      <path class="draw" stroke-width="0.6" d="M 0 12 H 150"/>
+      <path class="draw" stroke-width="0.6" d="M 380 12 H 230"/>
+      <path class="draw" stroke-width="0.7" d="M 190 2 L 200 12 L 190 22 L 180 12 Z"/>
+      <path class="draw" stroke-width="0.5" d="M 190 6.5 L 195.5 12 L 190 17.5 L 184.5 12 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 163 12 L 168 7 L 173 12 L 168 17 Z"/>
+      <path class="draw" stroke-width="0.6" d="M 207 12 L 212 7 L 217 12 L 212 17 Z"/>
+      <circle class="diamond-fill pop" cx="190" cy="12" r="1.6"/>
+    </svg>
+  </div>
+  <p class="reveal">Our children are not only listening to what we teach.<br>They are learning from who we are becoming.</p>
+  <span class="closing-name reveal">— Razia</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* nav background on scroll */
+  var nav = document.getElementById('nav');
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if (!window.gsap || reduced) return;
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.set('#heroArch', { xPercent: -50, yPercent: -52 });
+
+  /* ── hero entrance ── */
+  var archOuter = document.getElementById('archOuter');
+  var archInner = document.getElementById('archInner');
+  [archOuter, archInner].forEach(function (p) {
+    var len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+  });
+  var intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  intro
+    .to(archOuter, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0)
+    .to(archInner, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0.25)
+    .to('#archFinial', { opacity: 1, duration: .8 }, 1.9)
+    .from('#heroLabel', { y: 18, opacity: 0, duration: .9 }, 0.7)
+    .from('#heroTitle .line span', { yPercent: 110, duration: 1.1, stagger: .16, ease: 'power4.out' }, 0.9)
+    .from('#heroSub', { y: 22, opacity: 0, duration: .9 }, 1.6);
+
+  /* hero parallax */
+  gsap.to('#heroTiles', { y: 60, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('#heroArch', { y: -90, opacity: .25, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+  /* ── generic reveals ── */
+  gsap.utils.toArray('.reveal').forEach(function (el) {
+    if (el.closest('#hero')) return;
+    gsap.from(el, {
+      y: 34, opacity: 0, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 86%', once: true }
+    });
+  });
+
+  /* ── ornamental dividers ── */
+  gsap.utils.toArray('[data-orn]').forEach(function (orn) {
+    var paths = orn.querySelectorAll('path.draw');
+    paths.forEach(function (p) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+    });
+    var pop = orn.querySelector('.pop');
+    if (pop) gsap.set(pop, { scale: 0, transformOrigin: 'center' });
+    var tl = gsap.timeline({ scrollTrigger: { trigger: orn, start: 'top 88%', once: true } });
+    tl.to(paths, { strokeDashoffset: 0, duration: 1.3, ease: 'power2.inOut', stagger: .08 });
+    if (pop) tl.to(pop, { scale: 1, duration: .5, ease: 'back.out(3)' }, '-=.4');
+  });
+
+  /* ── cta frame draws ── */
+  var frameSvg = document.getElementById('ctaFrameSvg');
+  var frameEl = document.getElementById('ctaFrame');
+  frameEl.style.border = 'none';
+  var frameRects = document.querySelectorAll('.draw-frame');
+  function sizeFrame() {
+    var b = frameEl.getBoundingClientRect();
+    var w = Math.round(b.width), hh = Math.round(b.height);
+    frameSvg.setAttribute('viewBox', '0 0 ' + w + ' ' + hh);
+    var insets = [1, 7];
+    frameRects.forEach(function (r, i) {
+      var m = insets[i];
+      r.setAttribute('x', m); r.setAttribute('y', m);
+      r.setAttribute('width', w - 2 * m); r.setAttribute('height', hh - 2 * m);
+    });
+  }
+  sizeFrame();
+  window.addEventListener('resize', sizeFrame);
+  frameRects.forEach(function (r) {
+    var len = r.getTotalLength();
+    r.style.strokeDasharray = len;
+    r.style.strokeDashoffset = len;
+  });
+  gsap.timeline({ scrollTrigger: { trigger: '#ctaFrame', start: 'top 78%', once: true } })
+    .to(frameRects, { strokeDashoffset: 0, duration: 1.8, ease: 'power2.inOut', stagger: .15 });
+})();
+</script>
+
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+
+<!-- LOGIN MODAL -->
+<script src="login-modal.js?v=2"></script>
+</body>
+</html>

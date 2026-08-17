@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "buildCommand": "node scripts/build.js",
+  "framework": null,
+  "installCommand": null,
+  "outputDirectory": "."
+}

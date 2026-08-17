@@ -1,0 +1,155 @@
+# Lady Rabi'a Academy — Zulip (Suhbah) Configuration Guide
+
+Prepared for: Razia and her brother (technical build)
+Platform: Zulip Cloud, free plan
+Purpose: reference document for setting up and running the suhbah community space, and for handing off the technical parts to your brother.
+
+---
+
+## 1. What's already decided
+
+These points came out of earlier planning and should not be re-litigated. They're the foundation everything below builds on.
+
+- Zulip Cloud free plan, not self-hosted.
+- One shared stream called **Suhbah**. It is created once and never duplicated per unit or per member.
+- Inside that stream, each Unit of content gets its own **topic**, named to match the Unit exactly.
+- Zulip cannot be embedded inside the members area on the free plan, because of server-level security header restrictions. Members are redirected to Zulip's own domain via a link or button on the site. Your brother's only build task here is that link; everything else below happens inside Zulip's own settings.
+- Drip logic (who has access to what, and when) stays in Vercel and Outseta. Zulip does not need to know or enforce anyone's individual join date.
+
+---
+
+## 2. Organisation setup
+
+| Setting | Recommended value | Notes |
+| --- | --- | --- |
+| Organisation name | Lady Rabi'a Academy | Or "Suhbah — Lady Rabi'a Academy" if you want the community space to read as distinct from the main brand. |
+| Organisation URL | something like `ladyrabia.zulipchat.com` | Free plan URLs sit on Zulip's own domain; a custom domain requires a paid plan. |
+| Sign-up type | Invite-only | This is a paid, gated community. Do not use open registration or a public join link. |
+| Discoverability | Not listed / not discoverable | No reason for this organisation to appear in any public directory. |
+| Guest accounts | Not used | Every person here is a paying member; there's no need for a lower-tier guest role. |
+| Branding | Upload your logo as the realm icon | Free plan customisation is limited (no full colour theming), so don't expect this to look like your site. Set expectations with members accordingly. |
+
+---
+
+## 3. Roles and groups
+
+Zulip has built-in role groups. Use these rather than inventing new ones at launch.
+
+| Role | Who holds it | What it controls |
+| --- | --- | --- |
+| Owner | Razia | Full control, including billing and the ability to remove administrators. Keep this to one person. |
+| Administrator | Razia's brother | Needed for the technical setup: creating streams, configuring permissions, wiring up any API automation. Can be downgraded to Member once setup is stable, if you'd rather he not have standing access. |
+| Member | Every paying member | Default role. Can post, reply, and read everything in streams they're subscribed to. |
+| Moderator (optional) | Not needed at launch | Worth adding later only if you bring on someone to help with day-to-day community moderation. |
+
+One optional custom group worth knowing about, not building yet: a **Founding Members** group, so your first 30 members can eventually be tagged or recognised as such if you want that later. This isn't required for launch and fits the "keep month one lean" principle; note it as a later addition rather than a task now.
+
+---
+
+## 4. Streams
+
+| Stream | Type | Who can post | Purpose |
+| --- | --- | --- | --- |
+| **Suhbah** | Private, invite-only | All members | The one member-facing stream. Every unit's discussion lives here, organised by topic. This is required and should not be split into per-unit streams. |
+| **Suhbah — Admin** (optional) | Private, Razia + brother only | Razia + brother | A place for founder notes, testing new topics before they go live, and technical troubleshooting. Not visible to members. Add this only if you find yourself wanting to test things without members seeing drafts. |
+
+Do not create additional member-facing streams (an "Announcements" stream, a "General Chat" stream, and so on) unless a real need shows up after launch. The single-stream model was chosen deliberately, so members have one place to be rather than several to check.
+
+---
+
+## 5. Topics inside Suhbah
+
+**Naming convention:** `Unit [number] — [Title]`, matching the unit name on the website exactly. For example: `Unit 0 — The North Star`.
+
+### Evergreen topics (create once, keep permanently)
+
+| Topic | Purpose |
+| --- | --- |
+| Start Here — Adab & Guidelines | Pin this. Sets expectations: this is suhbah, not therapy or a fatwa service; confidentiality; respectful disagreement; no diagnosing or advising on other members' situations. |
+| Introduce Yourself | A standing place for new members to say hello without needing a unit to attach it to. |
+| Dua Requests | Ongoing, not tied to any unit's release schedule. |
+
+### Unit topics (created one at a time, as each unit releases)
+
+A new topic is created **once per unit release**, not once per member. Since content unlocks on each member's individual join-date schedule, a topic should exist before the first member reaches that unit, not after. In practice:
+
+- Unit 0 topic exists from day one.
+- Unit 1's topic gets created once the first cohort of members is approaching day 30 (or whatever your release cadence lands on), not the moment any single new member joins.
+
+You have two ways to create these topics, and this is the one genuine decision left open:
+
+1. **Manual** — you create the topic directly in Zulip each time a new unit is ready. Takes seconds, needs no code.
+2. **Automated** — your brother wires this to the same server-side logic that unlocks the unit on the website, via Zulip's API, so the topic appears automatically at the right moment.
+
+Recommendation: start manual. It costs you almost nothing at low member numbers, and automating something that takes ten seconds a month isn't worth your brother's time yet. Revisit once the membership and unit count both grow.
+
+---
+
+## 6. A constraint worth knowing: topics aren't gated, streams are
+
+Zulip's access permissions work at the **stream** level, not the topic level. Anyone subscribed to Suhbah can see every topic inside it, including units they haven't reached yet in their own drip schedule. There is no native way to hide `Unit 6`'s topic from a member who's still on `Unit 0`.
+
+This was flagged earlier as an open question and it's worth resolving now rather than treating it as unfinished business: the practical answer is that it doesn't need solving. Seeing a topic's title and being able to follow its discussion thread is not the same as having the actual teaching. The unit content itself (the audio, the written teaching) stays gated on the website through Outseta, exactly as it does now. Zulip is downstream of that; a member ahead of the pack in conversation gains nothing they couldn't already get by asking a further-along friend what a unit was about. If this starts to feel like a real problem once the membership matures, the only true fix is separate streams per unit with sequential enrolment, which breaks the single shared-stream model you've already chosen, so it isn't recommended.
+
+---
+
+## 7. Moderation and message settings
+
+| Setting | Recommendation |
+| --- | --- |
+| Who can edit their own messages | Members, within a limited time window (Zulip's default of a few minutes to an hour is reasonable) |
+| Who can delete messages | Message author for their own messages; administrators for anything requiring removal |
+| Who can create new streams | Administrators only (Razia + brother) |
+| Who can post in Suhbah — Admin (if created) | Administrators only |
+| Message retention | Keep indefinitely; do not set an automatic deletion policy |
+
+One thing to plan around rather than fix now: <cite index="6-1">the Zulip Cloud free plan only allows the most recent 10,000 messages to be viewed and searched</cite>, though <cite index="6-1">older messages remain stored and become available again if you upgrade to Zulip Cloud Standard</cite>. At your likely early volume this won't matter for a long time, but it's worth checking message count occasionally once the membership grows, as a signal for when it's time to consider the paid plan rather than something that needs solving today.
+
+---
+
+## 8. Notification defaults
+
+- New members should be subscribed to **Suhbah** automatically on joining, with normal (not muted) notification settings, so they don't miss the first thing anyone says to them.
+- Pin the "Start Here" topic so it's the first thing a new member sees when they open the stream.
+- Consider a short automated welcome message (via Zulip's own welcome bot settings, or a manual first reply from you) tagging new members into the "Introduce Yourself" topic.
+
+---
+
+## 9. Access flow: Outseta → Zulip
+
+1. Member completes payment and is marked active in Outseta.
+2. The members area on the website shows a link or button to the suhbah space (this is the only thing your brother needs to build on the Vercel side).
+3. Member clicks through to Zulip's own domain and creates an account there, using invite-only sign-up.
+4. Member is added to the Suhbah stream, either manually by you at low volume or automatically if this gets wired up later.
+
+Zulip access itself (who can even reach the sign-up page) is controlled inside Zulip's own settings, not by anything built into the website.
+
+---
+
+## 10. Who does what
+
+| Task | Owner |
+| --- | --- |
+| Organisation setup (name, URL, sign-up restrictions) | Brother |
+| Creating the Suhbah stream and setting permissions | Brother |
+| Writing the "Start Here — Adab & Guidelines" pinned message | Razia |
+| Creating new unit topics each release | Razia (manual, for now) |
+| Adding the members-area link to Zulip | Brother |
+| Adding new members to Suhbah as they join | Razia, until volume justifies automating |
+| Monitoring the 10,000-message search cap over time | Razia |
+
+---
+
+## 11. Open decisions to confirm before going live
+
+- Manual vs automated topic creation for new units (recommendation above: start manual).
+- Whether to build the optional "Suhbah — Admin" private stream now or skip it.
+- Wording for the "Start Here — Adab & Guidelines" pinned message. This should be short, and should set out plainly that this is suhbah and reflection, not therapy, not a fatwa service, and not a space for diagnosing other members' situations.
+
+---
+
+## 12. Monthly routine, once live
+
+- On each unit's release day: create the new topic in Suhbah, named to match the unit exactly.
+- Check new members have been added to the stream.
+- Glance at total message count against the 10,000 free-plan search limit as membership grows.

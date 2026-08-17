@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Viewer — Lady Rabi'a Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --ivory: #f9f5ed;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --gold: #b5860d;
+    --muted: #5a5240;
+  }
+  
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .viewer-header {
+    background: var(--green);
+    color: var(--ivory);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+  }
+  
+  .viewer-title {
+    font-size: 16px;
+    font-style: italic;
+    letter-spacing: .02em;
+  }
+  
+  .close-btn {
+    background: none;
+    border: 0.5px solid rgba(249,245,237,.3);
+    color: var(--ivory);
+    padding: 8px 18px;
+    border-radius: 1px;
+    font-family: 'EB Garamond', serif;
+    font-size: 13px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .3s, border-color .3s;
+  }
+  
+  .close-btn:hover {
+    background: rgba(249,245,237,.1);
+    border-color: rgba(201,168,76,.6);
+  }
+  
+  .viewer-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #525659;
+  }
+  
+  #pdf-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  
+  .loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ivory);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--muted);
+  }
+  
+  .error {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--ivory);
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .error.show {
+    display: flex;
+  }
+  
+  .error-message {
+    font-size: 16px;
+    color: var(--ink);
+    max-width: 400px;
+  }
+  
+  .retry-btn {
+    background: var(--green);
+    color: var(--ivory);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 1px;
+    font-family: 'EB Garamond', serif;
+    font-size: 14px;
+    letter-spacing: .08em;
+    cursor: pointer;
+    transition: transform .3s;
+  }
+  
+  .retry-btn:hover {
+    transform: translateY(-1px);
+  }
+</style>
+</head>
+<body>
+
+<div class="viewer-header">
+  <span class="viewer-title">Document Viewer</span>
+  <button class="close-btn" onclick="window.close()">Close</button>
+</div>
+
+<div class="viewer-container">
+  <div class="loading" id="loading">Loading document...</div>
+  <div class="error" id="error">
+    <p class="error-message" id="errorMessage">Failed to load document. Please try again.</p>
+    <button class="retry-btn" onclick="loadDocument()">Retry</button>
+  </div>
+  <iframe id="pdf-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=10"></script>
+<script>
+(function() {
+  var pdfUrl = null;
+  var iframe = document.getElementById('pdf-iframe');
+  var loading = document.getElementById('loading');
+  var errorEl = document.getElementById('error');
+  var errorMessage = document.getElementById('errorMessage');
+  
+  // Disable right-click on the entire page
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+  
+  async function loadDocument() {
+    loading.style.display = 'flex';
+    errorEl.classList.remove('show');
+    iframe.style.display = 'none';
+    
+    try {
+      // Get URL parameters
+      var params = new URLSearchParams(window.location.search);
+      var moduleId = params.get('module');
+      var pdfPath = params.get('path');
+      
+      if (!pdfPath) {
+        throw new Error('No document path provided');
+      }
+      
+      // Generate signed URL
+      var parts = pdfPath.split('/');
+      var bucket = parts[0];
+      var filePath = parts.slice(1).join('/');
+      
+      var result = await window.SupabaseClient.createSignedUrl(bucket, filePath, 600);
+      
+      if (result.error) {
+        throw new Error(result.error.message || 'Failed to generate secure URL');
+      }
+      
+      pdfUrl = result.data;
+      
+      // Use PDF.js viewer with disabled toolbar
+      var viewerUrl = 'https://mozilla.github.io/pdf.js/web/viewer.html?file=' + 
+                      encodeURIComponent(pdfUrl) + 
+                      '#toolbar=0&navpanes=0&scrollbar=0';
+      
+      iframe.src = viewerUrl;
+      
+      iframe.onload = function() {
+        loading.style.display = 'none';
+        iframe.style.display = 'block';
+      };
+      
+      iframe.onerror = function() {
+        throw new Error('Failed to load PDF viewer');
+      };
+      
+    } catch (error) {
+      console.error('PDF viewer error:', error);
+      loading.style.display = 'none';
+      errorMessage.textContent = error.message || 'Failed to load document. Please try again.';
+      errorEl.classList.add('show');
+    }
+  }
+  
+  // Load on page ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadDocument);
+  } else {
+    loadDocument();
+  }
+})();
+</script>
+
+</body>
+</html>

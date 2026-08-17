@@ -1,0 +1,12 @@
+{
+  "name": "ladyrabia-circle",
+  "version": "1.0.0",
+  "description": "Lady Rabi'a Circle - Membership Platform",
+  "scripts": {
+    "dev": "npx http-server -p 3000 -o",
+    "start": "npx http-server -p 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
