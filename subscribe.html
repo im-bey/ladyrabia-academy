@@ -324,22 +324,21 @@
     var params = new URLSearchParams(window.location.search);
 
     if (params.get('checkout') === 'success') {
-      // Arrived here because the dashboard's own webhook-confirmation poll
-      // timed out — the member already paid, so keep waiting instead of
-      // showing them the plan picker as if they hadn't. If it resolves,
-      // continue straight into the dashboard.
+      // Stripe itself redirects to complete-profile.html?checkout=success
+      // (payment comes before profile completion), so this branch is a
+      // defensive fallback for anyone who lands here directly with that
+      // param. Keep waiting instead of showing the plan picker to someone
+      // who already paid; complete-profile.html decides whether to show
+      // its form or pass straight through to the dashboard.
       scene.classList.add('is-finalizing');
       finalizingEl.classList.add('show');
       for (var attempt = 0; attempt < 8; attempt++) {
         if (await hasAccess()) {
-          window.location.href = '3-membership-v2-dashboard.html';
+          window.location.href = 'complete-profile.html';
           return;
         }
         await new Promise(function (resolve) { setTimeout(resolve, 1500); });
       }
-      // Still not confirmed after ~12s more (24s total including the
-      // dashboard's own wait) — fall through to the plan picker with an
-      // explanatory message rather than polling forever.
       scene.classList.remove('is-finalizing');
       finalizingEl.classList.remove('show');
       showError('Still confirming your payment — if you already paid, this can take a minute. Refresh this page, or contact us if it persists.');
@@ -347,7 +346,7 @@
     }
 
     if (await hasAccess()) {
-      window.location.href = '3-membership-v2-dashboard.html';
+      window.location.href = 'complete-profile.html';
       return;
     }
 

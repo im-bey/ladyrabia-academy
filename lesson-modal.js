@@ -7,6 +7,82 @@
      with GSAP animations, audio player, and notes
      ══════════════════════════════════════════════ */
 
+  /* Progress/reflection API — now routed through the update-progress and
+     get-signed-assets Edge Functions (verified against the Outseta access
+     token) instead of direct Supabase client calls under RLS. Shaped to
+     match the old progressAPI.* return contracts exactly, so the
+     call sites below didn't need to change beyond the object name. */
+  var progressAPI = {
+    getUserProgress: async function (moduleId) {
+      try {
+        var res = await window.LRAAuth.callGateway('update-progress', { action: 'get', moduleId: moduleId });
+        return res.data || { status: 'available', notes: { reflections: [] } };
+      } catch (e) {
+        return { status: 'available', notes: { reflections: [] } };
+      }
+    },
+    updateListenProgress: async function (moduleId, seconds) {
+      try { await window.LRAAuth.callGateway('update-progress', { action: 'listenProgress', moduleId: moduleId, seconds: seconds }); }
+      catch (e) { console.error('updateListenProgress failed', e); }
+    },
+    markAudioListenedFully: async function (moduleId) {
+      try { await window.LRAAuth.callGateway('update-progress', { action: 'markListenedFully', moduleId: moduleId }); }
+      catch (e) { console.error('markAudioListenedFully failed', e); }
+    },
+    updateCompletionStatus: async function (moduleId) {
+      try {
+        await window.LRAAuth.callGateway('update-progress', { action: 'complete', moduleId: moduleId });
+        return true;
+      } catch (e) {
+        console.error('updateCompletionStatus failed', e);
+        return false;
+      }
+    },
+    addReflection: async function (moduleId, content) {
+      try {
+        await window.LRAAuth.callGateway('update-progress', { action: 'addReflection', moduleId: moduleId, content: content });
+        return true;
+      } catch (e) {
+        console.error('addReflection failed', e);
+        return false;
+      }
+    },
+    updateReflection: async function (moduleId, reflectionId, content) {
+      try {
+        await window.LRAAuth.callGateway('update-progress', { action: 'updateReflection', moduleId: moduleId, reflectionId: reflectionId, content: content });
+        return true;
+      } catch (e) {
+        console.error('updateReflection failed', e);
+        return false;
+      }
+    },
+    deleteReflection: async function (moduleId, reflectionId) {
+      try {
+        await window.LRAAuth.callGateway('update-progress', { action: 'deleteReflection', moduleId: moduleId, reflectionId: reflectionId });
+        return true;
+      } catch (e) {
+        console.error('deleteReflection failed', e);
+        return false;
+      }
+    },
+    getReflections: async function (moduleId) {
+      try {
+        var res = await window.LRAAuth.callGateway('update-progress', { action: 'getReflections', moduleId: moduleId });
+        return res.data || [];
+      } catch (e) {
+        return [];
+      }
+    },
+    getSignedAssetsForModule: async function (moduleData) {
+      try {
+        var res = await window.LRAAuth.callGateway('get-signed-assets', { moduleId: moduleData.id });
+        return { data: res.data, error: null };
+      } catch (e) {
+        return { data: null, error: e };
+      }
+    }
+  };
+
   /* Inject modal CSS */
   var style = document.createElement('style');
   style.textContent = `
@@ -831,7 +907,7 @@
     audioDuration = (durationMinutes || 0) * 60; // Prefer provided minutes, else 0 and use metadata
     
     /* Load saved position */
-    var progress = await window.SupabaseClient.getUserProgress(moduleId);
+    var progress = await progressAPI.getUserProgress(moduleId);
     if (progress.listen_progress_seconds > 0) {
       audio.currentTime = progress.listen_progress_seconds;
     }
@@ -850,26 +926,26 @@
       
       /* Save every 10 seconds */
       if (currentPos - lastSavedPosition >= 10) {
-        await window.SupabaseClient.updateListenProgress(moduleId, currentPos);
+        await progressAPI.updateListenProgress(moduleId, currentPos);
         lastSavedPosition = currentPos;
       }
       
       /* Check if listened fully (95% threshold) */
       var total = audioDuration > 0 ? audioDuration : (isFinite(audio.duration) ? Math.floor(audio.duration) : 0);
       if (total > 0 && currentPos >= total * 0.95) {
-        await window.SupabaseClient.markAudioListenedFully(moduleId, true);
+        await progressAPI.markAudioListenedFully(moduleId, true);
         await updateCompletionRequirements();
       }
     }, 1000));
     
     /* Save on pause */
     audio.addEventListener('pause', async function() {
-      await window.SupabaseClient.updateListenProgress(moduleId, Math.floor(audio.currentTime));
+      await progressAPI.updateListenProgress(moduleId, Math.floor(audio.currentTime));
     });
     
     /* Mark complete on ended */
     audio.addEventListener('ended', async function() {
-      await window.SupabaseClient.markAudioListenedFully(moduleId, true);
+      await progressAPI.markAudioListenedFully(moduleId, true);
       await updateCompletionRequirements();
     });
   }
@@ -892,7 +968,7 @@
     }
     
     // Not completed: require both reflection and audio fully listened
-    var progress = await window.SupabaseClient.getUserProgress(currentLesson.id);
+    var progress = await progressAPI.getUserProgress(currentLesson.id);
     var canComplete = !!(progress && progress.has_reflection && progress.has_listened_fully);
     btn.disabled = !canComplete;
     btn.textContent = 'Mark Complete';
@@ -905,7 +981,7 @@
   async function updateCompletionRequirements() {
     if (!currentLesson) return;
     
-    var progress = await window.SupabaseClient.getUserProgress(currentLesson.id);
+    var progress = await progressAPI.getUserProgress(currentLesson.id);
     var reflectionReq = document.getElementById('reflectionRequirement');
     var audioReq = document.getElementById('audioRequirement');
     
@@ -977,7 +1053,7 @@
     } else if (lessonData.moduleData) {
       (async function() {
         try {
-          var res = await window.SupabaseClient.getSignedAssetsForModule(lessonData.moduleData);
+          var res = await progressAPI.getSignedAssetsForModule(lessonData.moduleData);
           var urls = (res && res.data) || {};
           
           /* Render audio player */
@@ -1191,7 +1267,7 @@
     
     /* Validate requirements before marking complete */
     if (!isCurrentlyComplete) {
-      var progress = await window.SupabaseClient.getUserProgress(currentLesson.id);
+      var progress = await progressAPI.getUserProgress(currentLesson.id);
       var hasReflection = progress.has_reflection || false;
       var hasListenedFully = progress.has_listened_fully || false;
       
@@ -1207,7 +1283,7 @@
     }
     
     /* Update Supabase */
-    var success = await window.SupabaseClient.updateCompletionStatus(currentLesson.id, !isCurrentlyComplete);
+    var success = await progressAPI.updateCompletionStatus(currentLesson.id, !isCurrentlyComplete);
     
     if (success) {
       currentLesson.status = newStatus;
@@ -1266,9 +1342,9 @@
     
     var success;
     if (editingReflectionId) {
-      success = await window.SupabaseClient.updateReflection(currentLesson.id, editingReflectionId, content);
+      success = await progressAPI.updateReflection(currentLesson.id, editingReflectionId, content);
     } else {
-      success = await window.SupabaseClient.addReflection(currentLesson.id, content);
+      success = await progressAPI.addReflection(currentLesson.id, content);
     }
     
     if (success) {
@@ -1286,7 +1362,7 @@
   
   /* Load and display reflections */
   async function loadReflections(moduleId) {
-    var reflections = await window.SupabaseClient.getReflections(moduleId);
+    var reflections = await progressAPI.getReflections(moduleId);
     var listEl = document.getElementById('reflectionsList');
     
     if (!reflections || reflections.length === 0) {
@@ -1347,7 +1423,7 @@
     } else if (action === 'delete') {
       if (!confirm('Are you sure you want to delete this reflection?')) return;
       
-      var success = await window.SupabaseClient.deleteReflection(currentLesson.id, reflectionId);
+      var success = await progressAPI.deleteReflection(currentLesson.id, reflectionId);
       if (success) {
         await loadReflections(currentLesson.id);
       } else {

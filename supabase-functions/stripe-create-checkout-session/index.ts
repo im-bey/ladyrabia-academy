@@ -100,7 +100,11 @@ Deno.serve(async (req: Request) => {
       mode: "subscription",
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/3-membership-v2-dashboard.html?checkout=success`,
+      // complete-profile.html, not the dashboard directly: payment comes
+      // before profile completion, so a member who paid but hasn't filled
+      // in their profile lands there next (it no-ops straight through to
+      // the dashboard if the profile is already complete).
+      success_url: `${origin}/complete-profile.html?checkout=success`,
       cancel_url: `${origin}/subscribe.html?checkout=cancelled`,
       metadata: { supabase_user_id: profile.id },
       subscription_data: { metadata: { supabase_user_id: profile.id } },

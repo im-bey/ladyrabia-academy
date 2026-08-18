@@ -203,6 +203,20 @@
     display: none;
   }
 
+  .status-message {
+    display: none;
+    text-align: center;
+    padding: 2rem 0;
+  }
+  .status-message.show { display: block; }
+  .status-message .spinner {
+    width: 32px; height: 32px; margin: 0 auto 1.1rem;
+    border: 2px solid rgba(201,168,76,.25); border-top-color: var(--green);
+    border-radius: 50%; animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-message p { font-size: 14.5px; color: var(--muted); font-style: italic; }
+
   .error-message.show {
     display: block;
   }
@@ -228,6 +242,10 @@
     </header>
 
     <div id="errorMessage" class="error-message"></div>
+    <div id="statusMessage" class="status-message">
+      <div class="spinner"></div>
+      <p id="statusText">Confirming your payment…</p>
+    </div>
 
     <form class="profile-form" id="profileForm">
       <fieldset class="form-fields">
@@ -264,6 +282,13 @@
   var form = document.getElementById('profileForm');
   var submitBtn = document.getElementById('submitBtn');
   var errorMsg = document.getElementById('errorMessage');
+  var statusMsg = document.getElementById('statusMessage');
+  var statusText = document.getElementById('statusText');
+
+  // Statuses that grant access — matches the dashboard's ACCESS_STATUSES
+  // and subscribe.html's exactly, so no page in the funnel disagrees on
+  // who counts as a paying member.
+  var ACCESS_STATUSES = ['active', 'trialing', 'past_due'];
 
   function showError(message) {
     errorMsg.textContent = message;
@@ -274,14 +299,53 @@
     errorMsg.classList.remove('show');
   }
 
+  async function hasAccess() {
+    var sub = await window.SupabaseClient.getSubscription();
+    return !!(sub && ACCESS_STATUSES.indexOf(sub.status) !== -1);
+  }
+
   // Load current user data
   async function loadUserData() {
     try {
       var userData = await window.SupabaseClient.getCurrentUser();
-      
+
       if (!userData || !userData.user) {
         window.location.href = 'index.html';
         return;
+      }
+
+      var isAdmin = userData.profile && userData.profile.role === 'admin';
+
+      // Payment comes before profile completion: an admin skips the
+      // paywall entirely; everyone else must have a subscription with
+      // access before this page will even show the profile form.
+      if (!isAdmin) {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('checkout') === 'success') {
+          // Landed here right after Stripe Checkout — the webhook that
+          // activates the subscription may take a moment. Poll briefly
+          // instead of either showing the form prematurely or bouncing
+          // back to the paywall a member who already paid.
+          form.style.display = 'none';
+          statusMsg.classList.add('show');
+          var confirmed = false;
+          for (var attempt = 0; attempt < 8 && !confirmed; attempt++) {
+            confirmed = await hasAccess();
+            if (!confirmed) await new Promise(function (resolve) { setTimeout(resolve, 1500); });
+          }
+          statusMsg.classList.remove('show');
+          form.style.display = '';
+          if (!confirmed) {
+            statusText.textContent = 'Still confirming your payment…';
+            statusMsg.classList.add('show');
+            form.style.display = 'none';
+            showError('Still confirming your payment — if you already paid, this can take a minute. Refresh this page, or contact us if it persists.');
+            return;
+          }
+        } else if (!(await hasAccess())) {
+          window.location.href = 'subscribe.html';
+          return;
+        }
       }
 
       // Populate email field
