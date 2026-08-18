@@ -72,6 +72,7 @@
   .nav-link {
     font-size: 16px; color: var(--muted); text-decoration: none;
     position: relative; padding-bottom: 4px; transition: color .3s;
+    background: none; border: none; cursor: pointer; font-family: 'EB Garamond', serif;
   }
   .nav-link::after {
     content: ''; position: absolute; left: 0; bottom: 0; height: 0.5px; width: 100%;
@@ -113,7 +114,7 @@
   }
 
   .signup-panel {
-    position: relative; width: 100%; max-width: 480px;
+    position: relative; width: 100%; max-width: 640px;
     background: var(--ivory);
     border: 0.5px solid var(--gold-light);
     border-radius: 1px;
@@ -168,49 +169,34 @@
     fill: none;
   }
 
-  .signup-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+  .plans {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-top: 1.6rem;
   }
-
-  .form-fields {
-    border: none;
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  .field label {
-    font-size: 10.5px;
-    letter-spacing: .22em;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-
-  .field input {
-    border: 0.5px solid rgba(201,168,76,.6);
-    padding: 13px 14px;
-    font-family: 'EB Garamond', serif;
-    font-size: 15px;
-    background: var(--ivory);
-    color: var(--ink);
+  .plan-card {
+    position: relative;
+    border: 0.5px solid var(--gold-light);
     border-radius: 1px;
-    outline: none;
-    transition: border-color .3s;
-    width: 100%;
+    padding: 1.6rem 1.3rem;
+    text-align: center;
   }
-
-  .field input:focus {
-    border-color: var(--gold);
+  .plan-card.is-recommended { border-color: var(--gold); }
+  .plan-badge {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: var(--ivory);
+    font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+    padding: 4px 12px; white-space: nowrap;
   }
+  .plan-name {
+    font-family: 'Playfair Display', serif; font-size: 17px; font-style: italic;
+    color: var(--green); margin-bottom: .6rem;
+  }
+  .plan-price {
+    font-family: 'Playfair Display', serif; font-size: 34px;
+    color: var(--green); line-height: 1; margin-bottom: 4px;
+  }
+  .plan-price .cur { font-size: 17px; vertical-align: top; }
+  .plan-period { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 1rem; }
 
   .btn-primary {
     display: block;
@@ -219,9 +205,9 @@
     background: var(--green);
     color: var(--ivory);
     font-family: 'EB Garamond', serif;
-    font-size: 15px;
-    letter-spacing: .08em;
-    padding: 15px 36px;
+    font-size: 14px;
+    letter-spacing: .06em;
+    padding: 13px 20px;
     border: none;
     cursor: pointer;
     border-radius: 1px;
@@ -241,99 +227,26 @@
     z-index: 1;
   }
 
-  .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin: 1.5rem 0;
-    color: var(--muted);
-    font-size: 13px;
-    font-style: italic;
-  }
-
-  .divider::before,
-  .divider::after {
-    content: '';
-    flex: 1;
-    height: 0.5px;
-    background: rgba(201,168,76,.4);
-  }
-
-  .btn-google {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 13px 36px;
-    background: white;
-    border: 1px solid rgba(201,168,76,.6);
-    border-radius: 1px;
-    font-family: 'EB Garamond', serif;
-    font-size: 15px;
-    color: var(--ink);
-    cursor: pointer;
-    transition: all .3s;
-  }
-
-  .btn-google:hover {
-    border-color: var(--gold);
-    background: var(--ivory-warm);
-  }
-
   .signup-alt {
     text-align: center;
-    margin-top: 1.5rem;
+    margin-top: 1.6rem;
     font-size: 13px;
     font-style: italic;
     color: var(--muted);
   }
 
-  .signup-alt a {
+  .signup-alt button {
+    background: none; border: none; padding: 0; cursor: pointer;
     color: var(--gold);
+    font-family: inherit; font-size: inherit; font-style: italic;
     text-decoration: none;
     border-bottom: 0.5px solid rgba(201,168,76,.5);
     transition: color .3s, border-color .3s;
   }
 
-  .signup-alt a:hover {
+  .signup-alt button:hover {
     color: var(--green);
     border-color: var(--gold);
-  }
-
-  .error-message {
-    background: rgba(169,68,66,.1);
-    border: 1px solid rgba(169,68,66,.3);
-    color: #a94442;
-    padding: 12px 14px;
-    border-radius: 1px;
-    font-size: 14px;
-    margin-bottom: 1rem;
-    display: none;
-  }
-
-  .error-message.show {
-    display: block;
-  }
-
-  .success-message {
-    background: rgba(27,60,40,.1);
-    border: 1px solid rgba(27,60,40,.3);
-    color: var(--green);
-    padding: 12px 14px;
-    border-radius: 1px;
-    font-size: 14px;
-    margin-bottom: 1rem;
-    display: none;
-  }
-
-  .success-message.show {
-    display: block;
   }
 </style>
 </head>
@@ -354,16 +267,17 @@
       <a class="nav-link" href="4-about-razia.html">About Razia</a>
       <a class="nav-link" href="3-membership.html">The Membership</a>
       <a class="nav-link" href="2-opening-teaching.html">The Opening Teaching</a>
-      <a class="nav-link" href="#login" data-auth-toggle>Log in</a>
+      <button class="nav-link" type="button" data-auth-toggle onclick="Outseta.auth.open({widgetMode:'login', mode:'popup'})">Log in</button>
     </div>
   </div>
 </nav>
 
-<!-- ══ SIGNUP SCENE ══ -->
+<!-- ══ SIGNUP SCENE — plan picker; Outseta's registration widget handles
+     account creation + payment natively once a plan is chosen ══ -->
 <section class="signup">
   <div class="signup-panel">
     <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
-    
+
     <header class="signup-header">
       <span class="section-lbl">Lady Rabi'a Academy</span>
       <h1 class="signup-title">Join the Membership</h1>
@@ -376,55 +290,24 @@
       </div>
     </header>
 
-    <div id="errorMessage" class="error-message"></div>
-    <div id="successMessage" class="success-message"></div>
-
-    <form class="signup-form" id="signupForm">
-      <fieldset class="form-fields">
-        <div class="field">
-          <label for="name">Name *</label>
-          <input id="name" name="name" type="text" required autocomplete="given-name">
-        </div>
-        <div class="field">
-          <label for="surname">Surname *</label>
-          <input id="surname" name="surname" type="text" required autocomplete="family-name">
-        </div>
-        <div class="field">
-          <label for="email">Email *</label>
-          <input id="email" name="email" type="email" required autocomplete="email">
-        </div>
-        <div class="field">
-          <label for="contactNumber">Contact Number *</label>
-          <input id="contactNumber" name="contactNumber" type="tel" required autocomplete="tel">
-        </div>
-        <div class="field">
-          <label for="password">Password *</label>
-          <input id="password" name="password" type="password" required autocomplete="new-password" minlength="8">
-        </div>
-        <div class="field">
-          <label for="confirmPassword">Confirm Password *</label>
-          <input id="confirmPassword" name="confirmPassword" type="password" required autocomplete="new-password" minlength="8">
-        </div>
-      </fieldset>
-      <button class="btn-primary" type="submit" id="submitBtn">
-        <span>Create Account</span>
-      </button>
-    </form>
-
-    <div class="divider">or</div>
-
-    <button class="btn-google" id="googleSignupBtn">
-      <svg width="18" height="18" viewBox="0 0 18 18">
-        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z"/>
-        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
-      </svg>
-      <span>Sign up with Google</span>
-    </button>
+    <div class="plans">
+      <div class="plan-card is-recommended">
+        <span class="plan-badge">First 30 seats</span>
+        <div class="plan-name">Founding member</div>
+        <div class="plan-price"><span class="cur">£</span>17</div>
+        <div class="plan-period">a month, renewed by choice</div>
+        <button class="btn-primary" type="button" data-plan-uid="wQXNqoWK"><span>Choose Founding</span></button>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Standard</div>
+        <div class="plan-price"><span class="cur">£</span>25</div>
+        <div class="plan-period">a month, renewed by choice</div>
+        <button class="btn-primary" type="button" data-plan-uid="XQYa47QP"><span>Choose Standard</span></button>
+      </div>
+    </div>
 
     <p class="signup-alt">
-      Already have an account? <a href="#login">Log in</a>
+      Already have an account? <button type="button" onclick="Outseta.auth.open({widgetMode:'login', mode:'popup'})">Log in</button>
     </p>
   </div>
 </section>
@@ -445,132 +328,32 @@
 })();
 </script>
 
-<!-- Supabase + auth (order matters: config -> supabase-js -> client -> auth) -->
-<script src="config.js?v=3"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=15"></script>
-<script src="brevo-email-service.js?v=2"></script>
-<script src="auth.js?v=2"></script>
-<script src="login-modal.js?v=2"></script>
+<script>
+  var o_options = {
+    domain: 'lady-rabia-academy.outseta.com',
+    load: 'auth,profile'
+  };
+</script>
+<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
+<script src="outseta-client.js?v=1"></script>
 
 <script>
-(function() {
-  var form = document.getElementById('signupForm');
-  var googleBtn = document.getElementById('googleSignupBtn');
-  var submitBtn = document.getElementById('submitBtn');
-  var errorMsg = document.getElementById('errorMessage');
-  var successMsg = document.getElementById('successMessage');
-
-  function showError(message) {
-    errorMsg.textContent = message;
-    errorMsg.classList.add('show');
-    successMsg.classList.remove('show');
-  }
-
-  function showSuccess(message) {
-    successMsg.textContent = message;
-    successMsg.classList.add('show');
-    errorMsg.classList.remove('show');
-  }
-
-  function hideMessages() {
-    errorMsg.classList.remove('show');
-    successMsg.classList.remove('show');
-  }
-
-  // Email/Password Signup
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    hideMessages();
-
-    var name = document.getElementById('name').value.trim();
-    var surname = document.getElementById('surname').value.trim();
-    var email = document.getElementById('email').value.trim();
-    var contactNumber = document.getElementById('contactNumber').value.trim();
-    var password = document.getElementById('password').value;
-    var confirmPassword = document.getElementById('confirmPassword').value;
-
-    // Validation
-    if (!name || !surname || !email || !contactNumber || !password) {
-      showError('Please fill in all fields.');
-      return;
-    }
-
-    if (password.length < 8) {
-      showError('Password must be at least 8 characters long.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      showError('Passwords do not match.');
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.querySelector('span').textContent = 'Creating account...';
-
-    try {
-      var profileData = {
-        name: name,
-        surname: surname,
-        contactNumber: contactNumber
-      };
-
-      var result = await window.SupabaseClient.signUpWithEmail(email, password, profileData);
-
-      if (result.error) {
-        showError(result.error.message || 'Failed to create account. Please try again.');
-        submitBtn.disabled = false;
-        submitBtn.querySelector('span').textContent = 'Create Account';
-        return;
-      }
-
-      form.reset();
-
-      // If the project auto-confirms email, signUpWithEmail already
-      // produced a live session — take them straight to the plan picker
-      // so payment is the very next step. Otherwise they'll pick a plan
-      // and check out after verifying their email and logging in (the
-      // dashboard itself redirects unsubscribed members to subscribe.html,
-      // so this is just the more direct path when we can take it).
-      var sessionRes = await window.SupabaseClient.getSession();
-      var hasSession = sessionRes && sessionRes.data && sessionRes.data.session;
-
-      if (hasSession) {
-        showSuccess('Account created! Redirecting you to choose your membership plan…');
-        setTimeout(function() {
-          window.location.href = 'subscribe.html';
-        }, 1200);
-      } else {
-        showSuccess('Account created! Please check your email to verify your account, then log in to choose your membership plan.');
-        setTimeout(function() {
-          window.location.href = 'index.html';
-        }, 3000);
-      }
-
-    } catch (error) {
-      showError('An unexpected error occurred. Please try again.');
-      submitBtn.disabled = false;
-      submitBtn.querySelector('span').textContent = 'Create Account';
-    }
+(function () {
+  'use strict';
+  document.querySelectorAll('.plan-card [data-plan-uid]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (!window.Outseta) return;
+      window.Outseta.auth.open({
+        widgetMode: 'register',
+        mode: 'popup',
+        planUid: btn.dataset.planUid
+      });
+    });
   });
-
-  // Google OAuth Signup
-  googleBtn.addEventListener('click', async function() {
-    hideMessages();
-    
-    try {
-      var result = await window.SupabaseClient.signInWithGoogle();
-      
-      if (result.error) {
-        console.error('Google OAuth error:', result.error);
-        showError('Google sign-in failed: ' + (result.error.message || result.error.description || JSON.stringify(result.error)));
-      }
-      // OAuth will redirect automatically
-    } catch (error) {
-      console.error('Google OAuth exception:', error);
-      showError('An unexpected error occurred: ' + (error.message || error));
-    }
+  // After successful registration + checkout, the widget fires this event
+  // — take the new member straight to the payment-first flow gate.
+  window.Outseta && window.Outseta.on('accessToken.set', function () {
+    window.location.href = 'complete-profile.html';
   });
 })();
 </script>

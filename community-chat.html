@@ -196,16 +196,19 @@
       <a class="nav-link" href="3-membership.html">The Membership</a>
       <a class="nav-link" href="3-membership-v2-dashboard.html">Dashboard</a>
       <a class="nav-link active" href="community-chat.html">Community</a>
-      <a class="nav-link" href="#login" data-auth-toggle>Log in</a>
+      <button class="nav-link" type="button" data-auth-toggle onclick="Outseta.auth.open({widgetMode:'login', mode:'popup'})">Log in</button>
     </div>
   </div>
 </nav>
 
-<!-- Supabase + auth (order matters: config -> supabase-js -> client -> auth) -->
-<script src="config.js?v=3"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=15"></script>
-<script src="auth.js?v=2"></script>
+<script>
+  var o_options = {
+    domain: 'lady-rabia-academy.outseta.com',
+    load: 'auth,profile'
+  };
+</script>
+<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
+<script src="outseta-client.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 (function () {
@@ -228,34 +231,34 @@
 </script>
 <script>
 (function () {
-  /* Member-only guard: redirect logged-out visitors to the home page */
+  /* Member-only guard: redirect logged-out or unsubscribed visitors away.
+     get-available-content is the actual security boundary (verifies the
+     Outseta token + subscription server-side); this is just the UX
+     redirect that mirrors it. */
   var attempts = 0;
   var guard = setInterval(async function () {
     attempts++;
-    if (!window.SupabaseClient) {
-      if (attempts > 30) { clearInterval(guard); window.location.href = 'index.html'; }
+    if (!window.LRAAuth) {
+      if (attempts > 50) { clearInterval(guard); window.location.href = 'index.html'; }
       return;
     }
     clearInterval(guard);
     try {
-      var userData = await window.SupabaseClient.getCurrentUser();
-      if (!userData || !userData.user) {
+      var signedIn = await window.LRAAuth.signedIn();
+      if (!signedIn) {
         window.location.href = 'index.html';
         return;
       }
-      var isAdmin = userData.profile && userData.profile.role === 'admin';
-      if (!isAdmin) {
-        // Match the dashboard's access definition exactly: 'past_due' still
-        // has access during Stripe's payment-retry grace period, not just
-        // 'active'.
-        var sub = await window.SupabaseClient.getSubscription();
-        var isActiveMember = sub && ['active', 'trialing', 'past_due'].indexOf(sub.status) !== -1;
-        if (!isActiveMember) {
+      try {
+        await window.LRAAuth.callGateway('get-available-content');
+      } catch (e) {
+        if (e.status === 403) {
           window.location.href = 'subscribe.html';
           return;
         }
+        throw e;
       }
-      /* Sign-out is handled by auth.js's shared account pill (data-auth-toggle above). */
+      /* Sign-out is handled by outseta-client.js's shared account pill (data-auth-toggle above). */
     } catch (e) {
       window.location.href = 'index.html';
     }
@@ -283,22 +286,22 @@
 
 <script src="zulip-chat.js?v=3"></script>
 <script>
-  /* Wait for Supabase to be ready and user to be authenticated before initializing chat */
+  /* Wait for Outseta to be ready and user to be authenticated before initializing chat */
   (function() {
     var attempts = 0;
     var initInterval = setInterval(async function() {
       attempts++;
-      if (!window.SupabaseClient || !window.initZulipChat) {
+      if (!window.LRAAuth || !window.initZulipChat) {
         if (attempts > 50) {
           clearInterval(initInterval);
-          console.error('[Chat] Failed to initialize: Supabase or Zulip not loaded');
+          console.error('[Chat] Failed to initialize: LRAAuth or Zulip not loaded');
         }
         return;
       }
-      
+
       try {
-        var userData = await window.SupabaseClient.getCurrentUser();
-        if (userData && userData.user) {
+        var signedIn = await window.LRAAuth.signedIn();
+        if (signedIn) {
           clearInterval(initInterval);
           window.initZulipChat('zulip-chat-app');
         } else if (attempts > 50) {

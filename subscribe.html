@@ -148,15 +148,6 @@
   }
   .scene-alt a { border-bottom: 0.5px solid rgba(201,168,76,.5); text-decoration: none; }
 
-  .error-message {
-    display: none; text-align: center; color: #c53030;
-    font-size: 13.5px; margin-top: 1.2rem;
-  }
-  .error-message.show { display: block; }
-
-  /* Finalizing-payment state, shown while we wait for the webhook to
-     confirm a subscription (short grace period after a successful
-     Stripe Checkout redirect). */
   .finalizing { text-align: center; padding: 2rem 0; display: none; }
   .finalizing.show { display: block; }
   .finalizing .spinner {
@@ -189,12 +180,12 @@
     <div class="scene-header">
       <span class="section-lbl">One more step</span>
       <h1 class="scene-title">Choose your plan to unlock your dashboard</h1>
-      <p class="scene-sub">Your account is ready — the teachings, articles, and suhbah unlock once your membership is active.</p>
+      <p class="scene-sub">The teachings, articles, and suhbah unlock once your membership is active.</p>
     </div>
 
     <div class="finalizing" id="finalizing">
       <div class="spinner"></div>
-      <p>Confirming your payment…</p>
+      <p>Confirming your membership…</p>
     </div>
 
     <div class="plans" id="plans">
@@ -204,136 +195,91 @@
         <div class="plan-price"><span class="cur">£</span>17</div>
         <div class="plan-period">a month, renewed by choice</div>
         <p class="plan-note">Locked in at this rate for as long as you remain a member.</p>
-        <button class="plan-btn" type="button" data-plan="founding"><span>Choose Founding</span></button>
+        <button class="plan-btn" type="button" data-plan-uid="wQXNqoWK"><span>Choose Founding</span></button>
       </div>
       <div class="plan-card">
         <div class="plan-name">Standard</div>
         <div class="plan-price"><span class="cur">£</span>25</div>
         <div class="plan-period">a month, renewed by choice</div>
         <p class="plan-note">Full membership access at the standard rate.</p>
-        <button class="plan-btn" type="button" data-plan="standard"><span>Choose Standard</span></button>
+        <button class="plan-btn" type="button" data-plan-uid="XQYa47QP"><span>Choose Standard</span></button>
       </div>
     </div>
 
-    <p class="scene-alt">Payments are handled securely by Stripe. You can cancel any time from your dashboard.</p>
-    <div class="error-message" id="errorMessage"></div>
+    <p class="scene-alt">Payments are handled securely by Outseta &amp; Stripe. You can cancel any time from your profile.</p>
+    <div class="error-message" id="errorMessage" style="display:none; text-align:center; color:#c53030; font-size:13.5px; margin-top:1.2rem;"></div>
   </div>
 </section>
 
 <script>
-(function () {
-  var nav = document.getElementById('nav');
-  if (!nav) return;
-  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-})();
+  var o_options = {
+    domain: 'lady-rabia-academy.outseta.com',
+    load: 'auth,profile'
+  };
 </script>
-
-<!-- Supabase + auth (order matters: config -> supabase-js -> client -> auth) -->
-<script src="config.js?v=3"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=13"></script>
-<script src="auth.js?v=2"></script>
+<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
+<script src="outseta-client.js?v=1"></script>
 
 <script>
 (function () {
   'use strict';
 
+  var nav = document.getElementById('nav');
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
   var scene = document.getElementById('scene');
-  var plansEl = document.getElementById('plans');
   var finalizingEl = document.getElementById('finalizing');
   var errorEl = document.getElementById('errorMessage');
   var buttons = document.querySelectorAll('.plan-btn');
 
   function showError(message) {
     errorEl.textContent = message;
-    errorEl.classList.add('show');
+    errorEl.style.display = 'block';
   }
 
-  async function getAccessToken() {
-    var session = await window.SupabaseClient.getSession();
-    return session && session.data && session.data.session
-      ? session.data.session.access_token
-      : null;
-  }
-
-  async function startCheckout(plan) {
-    buttons.forEach(function (b) { b.disabled = true; });
-    errorEl.classList.remove('show');
-
-    try {
-      var token = await getAccessToken();
-      if (!token) {
-        window.location.href = 'index.html#login';
-        return;
-      }
-
-      var res = await fetch(window.LRA_CONFIG.supabase.functionsUrl + '/stripe-create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'apikey': window.LRA_CONFIG.supabase.anonKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ plan: plan, origin: window.location.origin })
-      });
-      var data = await res.json();
-
-      if (!res.ok || !data.url) {
-        showError(data.error || 'Could not start checkout. Please try again.');
-        buttons.forEach(function (b) { b.disabled = false; });
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch (e) {
-      console.error('[subscribe] checkout error:', e);
-      showError('An unexpected error occurred. Please try again.');
-      buttons.forEach(function (b) { b.disabled = false; });
-    }
-  }
-
+  // Whichever plan a visitor picks here becomes the account's subscription
+  // via Outseta's own registration/upgrade widget — it handles both "create
+  // an account and subscribe" (anonymous visitor) and "add a subscription
+  // to my existing account" (already logged in but unsubscribed) itself.
   buttons.forEach(function (btn) {
     btn.addEventListener('click', function () {
-      startCheckout(btn.dataset.plan);
+      if (!window.Outseta) return;
+      window.Outseta.auth.open({
+        widgetMode: 'register',
+        mode: 'popup',
+        planUid: btn.dataset.planUid
+      });
     });
   });
 
-  /* Statuses that grant access — matches the dashboard's ACCESS_STATUSES
-     exactly (past_due keeps access during Stripe's payment-retry grace
-     period, not just 'active') so the two pages never disagree. */
-  var ACCESS_STATUSES = ['active', 'trialing', 'past_due'];
-
   async function hasAccess() {
-    var sub = await window.SupabaseClient.getSubscription();
-    return !!(sub && ACCESS_STATUSES.indexOf(sub.status) !== -1);
+    try {
+      var res = await window.LRAAuth.callGateway('get-available-content');
+      return !res.error;
+    } catch (e) {
+      return false;
+    }
   }
 
   async function init() {
-    var userData = await window.SupabaseClient.getCurrentUser();
-    if (!userData || !userData.user) {
-      window.location.href = 'index.html#login';
-      return;
-    }
-    if (userData.profile && userData.profile.role === 'admin') {
-      window.location.href = 'admin-dashboard.html';
-      return;
+    var ready = await window.LRAAuth.signedIn();
+    if (ready) {
+      var access = await hasAccess();
+      if (access) {
+        window.location.href = 'complete-profile.html';
+        return;
+      }
     }
 
-    var params = new URLSearchParams(window.location.search);
-
-    if (params.get('checkout') === 'success') {
-      // Stripe itself redirects to complete-profile.html?checkout=success
-      // (payment comes before profile completion), so this branch is a
-      // defensive fallback for anyone who lands here directly with that
-      // param. Keep waiting instead of showing the plan picker to someone
-      // who already paid; complete-profile.html decides whether to show
-      // its form or pass straight through to the dashboard.
+    // If the member just came back from Outseta's own checkout flow, give
+    // the webhook a moment to sync before showing the plan picker again.
+    if (window.location.hash === '#o-authenticated' || new URLSearchParams(window.location.search).get('checkout') === 'success') {
       scene.classList.add('is-finalizing');
       finalizingEl.classList.add('show');
       for (var attempt = 0; attempt < 8; attempt++) {
-        if (await hasAccess()) {
+        if (await window.LRAAuth.signedIn() && await hasAccess()) {
           window.location.href = 'complete-profile.html';
           return;
         }
@@ -341,19 +287,16 @@
       }
       scene.classList.remove('is-finalizing');
       finalizingEl.classList.remove('show');
-      showError('Still confirming your payment — if you already paid, this can take a minute. Refresh this page, or contact us if it persists.');
-      return;
-    }
-
-    if (await hasAccess()) {
-      window.location.href = 'complete-profile.html';
-      return;
-    }
-
-    if (params.get('checkout') === 'cancelled') {
-      showError('Checkout was cancelled — pick a plan below whenever you\'re ready.');
+      showError('Still confirming your membership — if you already paid, this can take a minute. Refresh this page, or contact us if it persists.');
     }
   }
+
+  window.Outseta && window.Outseta.on('accessToken.set', function () {
+    // Fires right after a successful registration/checkout inside the
+    // popup — recheck access instead of waiting for a manual refresh.
+    init();
+  });
+
   init();
 })();
 </script>

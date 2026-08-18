@@ -654,6 +654,22 @@
   <div class="loading-text">Loading admin dashboard...</div>
 </div>
 
+<!-- Admin login gate — staff use Supabase Auth directly (separate from the
+     member-facing Outseta login), since this page manages content_modules
+     via RLS policies keyed to a Supabase Auth session. Hidden by default;
+     shown by the init script below if no session is found. -->
+<div id="adminLoginGate" style="display:none; position:fixed; inset:0; z-index:2000; background:var(--ivory); align-items:center; justify-content:center;">
+  <form id="adminLoginForm" style="width:100%; max-width:360px; padding:2.4rem 2rem; border:0.5px solid var(--gold-light); background:var(--ivory-warm);">
+    <h1 style="font-family:'Playfair Display',serif; font-style:italic; font-size:22px; color:var(--green); margin-bottom:1.4rem; text-align:center;">Admin sign in</h1>
+    <div id="adminLoginError" style="display:none; color:#a94442; font-size:13.5px; margin-bottom:1rem;"></div>
+    <div style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.4rem;">
+      <input id="adminLoginEmail" type="email" placeholder="Email" required autocomplete="email" style="border:0.5px solid rgba(201,168,76,.6); padding:12px 14px; font-family:'EB Garamond',serif; font-size:15px; background:var(--ivory); color:var(--ink);">
+      <input id="adminLoginPassword" type="password" placeholder="Password" required autocomplete="current-password" style="border:0.5px solid rgba(201,168,76,.6); padding:12px 14px; font-family:'EB Garamond',serif; font-size:15px; background:var(--ivory); color:var(--ink);">
+    </div>
+    <button type="submit" id="adminLoginSubmit" style="width:100%; background:var(--green); color:var(--ivory); border:none; padding:13px; font-family:'EB Garamond',serif; font-size:14px; letter-spacing:.06em; cursor:pointer;">Sign in</button>
+  </form>
+</div>
+
 <!-- NAV -->
 <nav class="nav" id="nav">
   <div class="nav-inner">
@@ -898,12 +914,11 @@
   </section>
 </main>
 
-<!-- Supabase JS -->
+<!-- Supabase JS — admin auth stays on Supabase Auth (see adminLoginGate above) -->
 <script src="config.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=15"></script>
 <script src="brevo-email-service.js?v=2"></script>
-<script src="auth.js?v=2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 (function () {
@@ -940,29 +955,68 @@
   // Failsafe: never let the overlay stick
   setTimeout(hideLoadingOverlay, 12000);
 
-  try {
-    // Check admin access
+  const loginGate = document.getElementById('adminLoginGate');
+  const loginForm = document.getElementById('adminLoginForm');
+  const loginError = document.getElementById('adminLoginError');
+
+  async function checkAdminAccess() {
     const userData = await window.SupabaseClient.getCurrentUser();
     if (!userData || !userData.user) {
-      window.location.href = 'index.html';
-      return;
+      hideLoadingOverlay();
+      loginGate.style.display = 'flex';
+      return false;
     }
-    
+
     if (!userData.profile || userData.profile.role !== 'admin') {
       alert('Access denied. Admin privileges required.');
       window.location.href = '3-membership-v2-dashboard.html';
-      return;
+      return false;
     }
 
-    // Update admin name in nav
     if (userData.profile.name) {
       const fullName = userData.profile.name + (userData.profile.surname ? ' ' + userData.profile.surname : '');
       document.getElementById('adminName').textContent = fullName;
       document.getElementById('avatarMonogram').textContent = userData.profile.name.charAt(0).toUpperCase();
     }
 
-    // Hide loading overlay after profile loads
+    loginGate.style.display = 'none';
     hideLoadingOverlay();
+    return true;
+  }
+
+  loginForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    loginError.style.display = 'none';
+    const submitBtn = document.getElementById('adminLoginSubmit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+    try {
+      const email = document.getElementById('adminLoginEmail').value.trim();
+      const password = document.getElementById('adminLoginPassword').value;
+      const result = await window.SupabaseClient.signInWithEmail(email, password);
+      if (result.error) {
+        loginError.textContent = result.error.message || 'Sign in failed.';
+        loginError.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign in';
+        return;
+      }
+      const ok = await checkAdminAccess();
+      if (ok) {
+        await loadUsers();
+        await loadModules();
+      }
+    } catch (err) {
+      loginError.textContent = 'An unexpected error occurred.';
+      loginError.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+    }
+  });
+
+  let isAdminAuthed = false;
+  try {
+    isAdminAuthed = await checkAdminAccess();
   } catch (error) {
     console.error('[ERROR] Admin dashboard init failed:', error.message || error);
     hideLoadingOverlay();

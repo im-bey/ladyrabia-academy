@@ -273,9 +273,14 @@
   </div>
 </section>
 
-<!-- Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=15"></script>
+<script>
+  var o_options = {
+    domain: 'lady-rabia-academy.outseta.com',
+    load: 'auth,profile'
+  };
+</script>
+<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
+<script src="outseta-client.js?v=1"></script>
 
 <script>
 (function() {
@@ -284,11 +289,7 @@
   var errorMsg = document.getElementById('errorMessage');
   var statusMsg = document.getElementById('statusMessage');
   var statusText = document.getElementById('statusText');
-
-  // Statuses that grant access — matches the dashboard's ACCESS_STATUSES
-  // and subscribe.html's exactly, so no page in the funnel disagrees on
-  // who counts as a paying member.
-  var ACCESS_STATUSES = ['active', 'trialing', 'past_due'];
+  var outsetaUser = null;
 
   function showError(message) {
     errorMsg.textContent = message;
@@ -300,88 +301,63 @@
   }
 
   async function hasAccess() {
-    var sub = await window.SupabaseClient.getSubscription();
-    return !!(sub && ACCESS_STATUSES.indexOf(sub.status) !== -1);
+    try {
+      await window.LRAAuth.callGateway('get-available-content');
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   // Load current user data
   async function loadUserData() {
     try {
-      var userData = await window.SupabaseClient.getCurrentUser();
-
-      if (!userData || !userData.user) {
+      var signedIn = await window.LRAAuth.signedIn();
+      if (!signedIn) {
         window.location.href = 'index.html';
         return;
       }
+      outsetaUser = await window.LRAAuth.getUser();
 
-      var isAdmin = userData.profile && userData.profile.role === 'admin';
-
-      // Payment comes before profile completion: an admin skips the
-      // paywall entirely; everyone else must have a subscription with
-      // access before this page will even show the profile form.
-      if (!isAdmin) {
-        var params = new URLSearchParams(window.location.search);
-        if (params.get('checkout') === 'success') {
-          // Landed here right after Stripe Checkout — the webhook that
-          // activates the subscription may take a moment. Poll briefly
-          // instead of either showing the form prematurely or bouncing
-          // back to the paywall a member who already paid.
-          form.style.display = 'none';
+      // Payment comes before profile completion: everyone must have a
+      // subscription with access before this page will even show the form.
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('checkout') === 'success') {
+        // Landed here right after Outseta's checkout widget closes — the
+        // webhook that activates the subscription may take a moment. Poll
+        // briefly instead of either showing the form prematurely or
+        // bouncing back to the paywall a member who already paid.
+        form.style.display = 'none';
+        statusMsg.classList.add('show');
+        var confirmed = false;
+        for (var attempt = 0; attempt < 8 && !confirmed; attempt++) {
+          confirmed = await hasAccess();
+          if (!confirmed) await new Promise(function (resolve) { setTimeout(resolve, 1500); });
+        }
+        statusMsg.classList.remove('show');
+        form.style.display = '';
+        if (!confirmed) {
+          statusText.textContent = 'Still confirming your payment…';
           statusMsg.classList.add('show');
-          var confirmed = false;
-          for (var attempt = 0; attempt < 8 && !confirmed; attempt++) {
-            confirmed = await hasAccess();
-            if (!confirmed) await new Promise(function (resolve) { setTimeout(resolve, 1500); });
-          }
-          statusMsg.classList.remove('show');
-          form.style.display = '';
-          if (!confirmed) {
-            statusText.textContent = 'Still confirming your payment…';
-            statusMsg.classList.add('show');
-            form.style.display = 'none';
-            showError('Still confirming your payment — if you already paid, this can take a minute. Refresh this page, or contact us if it persists.');
-            return;
-          }
-        } else if (!(await hasAccess())) {
-          window.location.href = 'subscribe.html';
+          form.style.display = 'none';
+          showError('Still confirming your payment — if you already paid, this can take a minute. Refresh this page, or contact us if it persists.');
           return;
         }
+      } else if (!(await hasAccess())) {
+        window.location.href = 'subscribe.html';
+        return;
       }
 
-      // Populate email field
-      document.getElementById('email').value = userData.user.email;
+      // Populate fields — Outseta's own registration form already collects
+      // name and email, so this page's only real job is contact number.
+      document.getElementById('email').value = outsetaUser.Email || '';
+      if (outsetaUser.FirstName) document.getElementById('name').value = outsetaUser.FirstName;
+      if (outsetaUser.LastName) document.getElementById('surname').value = outsetaUser.LastName;
+      if (outsetaUser.PhoneMobile) document.getElementById('contactNumber').value = outsetaUser.PhoneMobile;
 
-      // Pre-fill name from Google OAuth if available
-      if (userData.user.user_metadata) {
-        var metadata = userData.user.user_metadata;
-        
-        // Google provides full_name, sometimes given_name/family_name
-        if (metadata.full_name && !userData.profile?.name) {
-          var nameParts = metadata.full_name.split(' ');
-          if (nameParts.length > 0) {
-            document.getElementById('name').value = nameParts[0];
-          }
-          if (nameParts.length > 1) {
-            document.getElementById('surname').value = nameParts.slice(1).join(' ');
-          }
-        } else {
-          if (metadata.given_name) document.getElementById('name').value = metadata.given_name;
-          if (metadata.family_name) document.getElementById('surname').value = metadata.family_name;
-        }
-      }
-
-      // Pre-fill existing profile data if partially complete
-      if (userData.profile) {
-        if (userData.profile.name) document.getElementById('name').value = userData.profile.name;
-        if (userData.profile.surname) document.getElementById('surname').value = userData.profile.surname;
-        if (userData.profile.contact_number) document.getElementById('contactNumber').value = userData.profile.contact_number;
-      }
-
-      // Check if profile is already complete (has all required fields)
-      if (userData.profile && userData.profile.name && userData.profile.surname && userData.profile.contact_number) {
-        // Profile already complete, redirect to dashboard
-        var isAdmin = userData.profile.role === 'admin';
-        window.location.href = isAdmin ? 'admin-dashboard.html' : '3-membership-v2-dashboard.html';
+      // Profile already complete — pass straight through to the dashboard.
+      if (outsetaUser.FirstName && outsetaUser.LastName && outsetaUser.PhoneMobile) {
+        window.location.href = '3-membership-v2-dashboard.html';
       }
     } catch (error) {
       console.error('Failed to load user data:', error);
@@ -407,9 +383,7 @@
     submitBtn.querySelector('span').textContent = 'Saving...';
 
     try {
-      var userData = await window.SupabaseClient.getCurrentUser();
-      
-      if (!userData || !userData.user) {
+      if (!outsetaUser) {
         showError('Session expired. Please log in again.');
         setTimeout(function() {
           window.location.href = 'index.html';
@@ -417,23 +391,13 @@
         return;
       }
 
-      var result = await window.SupabaseClient.updateUserProfile(userData.user.id, {
-        name: name,
-        surname: surname,
-        contactNumber: contactNumber
+      await outsetaUser.update({
+        FirstName: name,
+        LastName: surname,
+        PhoneMobile: contactNumber
       });
 
-      if (result.error) {
-        showError(result.error.message || 'Failed to update profile.');
-        submitBtn.disabled = false;
-        submitBtn.querySelector('span').textContent = 'Complete Profile';
-        return;
-      }
-
-      // Redirect based on role
-      var updatedUserData = await window.SupabaseClient.getCurrentUser();
-      var isAdmin = updatedUserData && updatedUserData.profile && updatedUserData.profile.role === 'admin';
-      window.location.href = isAdmin ? 'admin-dashboard.html' : '3-membership-v2-dashboard.html';
+      window.location.href = '3-membership-v2-dashboard.html';
 
     } catch (error) {
       console.error('Profile update error:', error);

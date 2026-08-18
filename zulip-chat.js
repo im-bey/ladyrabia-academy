@@ -19,28 +19,23 @@
   let currentUser = 'Member';
   let accessToken = null;
 
-  /* Fetch the current member's access token + display name from Supabase */
+  /* Fetch the current member's access token + display name from Outseta */
   async function resolveMember() {
-    if (!window.SupabaseClient) {
-      console.error('[Zulip] SupabaseClient not loaded');
+    if (!window.LRAAuth) {
+      console.error('[Zulip] LRAAuth not loaded');
       return false;
     }
-    
+
     try {
-      const { data: { session }, error } = await window.SupabaseClient.getSession();
-      if (error || !session) {
-        console.error('[Zulip] No active session:', error);
+      var signedIn = await window.LRAAuth.signedIn();
+      if (!signedIn) {
+        console.error('[Zulip] No active session');
         return false;
       }
-      
-      const user = await window.SupabaseClient.getCurrentUser();
-      if (!user || !user.profile) {
-        console.error('[Zulip] No user profile found');
-        return false;
-      }
-      
-      accessToken = session.access_token;
-      currentUser = user.profile.name || 'Member';
+
+      var user = await window.LRAAuth.getUser();
+      accessToken = window.LRAAuth.getAccessToken();
+      currentUser = (user && (user.FirstName || user.FullName)) || 'Member';
       console.log('[Zulip] Auth resolved:', { user: currentUser, hasToken: !!accessToken });
       return true;
     } catch (err) {
