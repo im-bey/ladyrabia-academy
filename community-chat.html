@@ -243,6 +243,18 @@
         window.location.href = 'index.html';
         return;
       }
+      var isAdmin = userData.profile && userData.profile.role === 'admin';
+      if (!isAdmin) {
+        // Match the dashboard's access definition exactly: 'past_due' still
+        // has access during Stripe's payment-retry grace period, not just
+        // 'active'.
+        var sub = await window.SupabaseClient.getSubscription();
+        var isActiveMember = sub && ['active', 'trialing', 'past_due'].indexOf(sub.status) !== -1;
+        if (!isActiveMember) {
+          window.location.href = 'subscribe.html';
+          return;
+        }
+      }
       /* Sign-out is handled by auth.js's shared account pill (data-auth-toggle above). */
     } catch (e) {
       window.location.href = 'index.html';

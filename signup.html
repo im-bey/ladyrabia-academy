@@ -528,16 +528,18 @@
       form.reset();
 
       // If the project auto-confirms email, signUpWithEmail already
-      // produced a live session — take them straight to the dashboard's
-      // plan picker so they can subscribe. Otherwise they'll pick a plan
-      // and check out after verifying their email and logging in.
+      // produced a live session — take them straight to the plan picker
+      // so payment is the very next step. Otherwise they'll pick a plan
+      // and check out after verifying their email and logging in (the
+      // dashboard itself redirects unsubscribed members to subscribe.html,
+      // so this is just the more direct path when we can take it).
       var sessionRes = await window.SupabaseClient.getSession();
       var hasSession = sessionRes && sessionRes.data && sessionRes.data.session;
 
       if (hasSession) {
         showSuccess('Account created! Redirecting you to choose your membership plan…');
         setTimeout(function() {
-          window.location.href = '3-membership-v2-dashboard.html';
+          window.location.href = 'subscribe.html';
         }, 1200);
       } else {
         showSuccess('Account created! Please check your email to verify your account, then log in to choose your membership plan.');

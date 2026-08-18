@@ -101,7 +101,7 @@ Deno.serve(async (req: Request) => {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/3-membership-v2-dashboard.html?checkout=success`,
-      cancel_url: `${origin}/signup.html?checkout=cancelled`,
+      cancel_url: `${origin}/subscribe.html?checkout=cancelled`,
       metadata: { supabase_user_id: profile.id },
       subscription_data: { metadata: { supabase_user_id: profile.id } },
     });

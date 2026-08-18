@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lady Rabi'a Academy — Choose Your Plan</title>
+<meta name="description" content="Complete your membership to unlock your dashboard.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ivory: #f9f5ed;
+    --ivory-warm: #f0ebe0;
+    --ink: #1c1a14;
+    --green: #1B3C28;
+    --green-deep: #142e1f;
+    --gold: #b5860d;
+    --gold-light: #c9a84c;
+    --muted: #5a5240;
+  }
+
+  html { scroll-behavior: smooth; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  body {
+    background: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    line-height: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  ::selection { background: rgba(181,134,13,.25); }
+
+  a { color: var(--gold); }
+  a:hover { color: var(--green); }
+
+  /* ══ NAV ══ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    border-bottom: 0.5px solid rgba(201,168,76,.45);
+    background: rgba(249,245,237,.94);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgba(201,168,76,.15);
+    transition: box-shadow .3s ease;
+  }
+  .nav.scrolled { box-shadow: 0 10px 30px -18px rgba(27,60,40,.35); }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem 2rem; flex-wrap: wrap;
+    max-width: 1240px; margin: 0 auto;
+    padding: 1.5rem clamp(1.5rem, 5vw, 2.75rem);
+  }
+  .nav-logo {
+    font-size: 18px; font-family: 'Playfair Display', serif; font-style: italic;
+    letter-spacing: .01em;
+    color: var(--green); text-decoration: none; display: flex; align-items: center; gap: 12px;
+  }
+  .nav-logo svg { display: block; width: 22px; height: 22px; }
+
+  /* ══ SCENE ══ */
+  .scene {
+    flex: 1;
+    min-height: 100vh;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ivory-warm);
+    padding: 8.5rem 1.5rem 5rem;
+  }
+
+  .panel {
+    position: relative; width: 100%; max-width: 760px;
+  }
+
+  .scene-header { text-align: center; margin-bottom: 2.4rem; }
+  .section-lbl {
+    display: block;
+    font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: .7rem;
+  }
+  .scene-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 3.4vw, 34px);
+    font-weight: 400; font-style: italic;
+    color: var(--green); line-height: 1.3;
+    margin-bottom: .8rem;
+  }
+  .scene-sub {
+    font-size: 15.5px; color: var(--muted); font-style: italic;
+    max-width: 480px; margin: 0 auto; line-height: 1.8;
+  }
+
+  .plans {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin-top: 2.6rem;
+  }
+  .plan-card {
+    position: relative;
+    background: var(--ivory);
+    border: 0.5px solid var(--gold-light);
+    border-radius: 1px;
+    padding: 2.2rem 1.8rem 1.9rem;
+    text-align: center;
+    display: flex; flex-direction: column;
+    box-shadow: 0 30px 60px -30px rgba(20,46,31,.18);
+  }
+  .plan-card.is-recommended { border-color: var(--gold); }
+  .plan-badge {
+    position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: var(--ivory);
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 1px; white-space: nowrap;
+  }
+  .plan-name {
+    font-family: 'Playfair Display', serif; font-size: 19px; font-style: italic;
+    color: var(--green); margin-bottom: .9rem;
+  }
+  .plan-price {
+    font-family: 'Playfair Display', serif; font-size: 40px;
+    color: var(--green); line-height: 1; margin-bottom: 4px;
+  }
+  .plan-price .cur { font-size: 20px; vertical-align: top; }
+  .plan-period { font-size: 12.5px; color: var(--muted); font-style: italic; margin-bottom: 1.2rem; }
+  .plan-note {
+    font-size: 13px; color: var(--muted); line-height: 1.7;
+    flex: 1; margin-bottom: 1.6rem;
+  }
+  .plan-btn {
+    display: block; width: 100%; text-align: center;
+    background: var(--green); color: var(--ivory);
+    font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: .06em;
+    padding: 13px 20px; border: none; cursor: pointer; border-radius: 1px;
+    text-decoration: none; position: relative; overflow: hidden;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s;
+  }
+  .plan-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(27,60,40,.55); }
+  .plan-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .scene-alt {
+    text-align: center; margin-top: 1.8rem;
+    font-size: 13px; font-style: italic; color: var(--muted);
+  }
+  .scene-alt a { border-bottom: 0.5px solid rgba(201,168,76,.5); text-decoration: none; }
+
+  .error-message {
+    display: none; text-align: center; color: #c53030;
+    font-size: 13.5px; margin-top: 1.2rem;
+  }
+  .error-message.show { display: block; }
+
+  /* Finalizing-payment state, shown while we wait for the webhook to
+     confirm a subscription (short grace period after a successful
+     Stripe Checkout redirect). */
+  .finalizing { text-align: center; padding: 2rem 0; display: none; }
+  .finalizing.show { display: block; }
+  .finalizing .spinner {
+    width: 36px; height: 36px; margin: 0 auto 1.2rem;
+    border: 2px solid rgba(201,168,76,.25); border-top-color: var(--green);
+    border-radius: 50%; animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .finalizing p { font-size: 14.5px; color: var(--muted); font-style: italic; }
+  .scene.is-finalizing .plans, .scene.is-finalizing .scene-alt { display: none; }
+
+  @media (max-width: 640px) {
+    .plans { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.8 15.2,8 8,15.2 0.8,8" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="8,4.6 11.4,8 8,11.4 4.6,8" fill="#b5860d"/></svg>
+      <span>Lady Rabi'a Academy</span>
+    </a>
+  </div>
+</nav>
+
+<section class="scene" id="scene">
+  <div class="panel">
+    <div class="scene-header">
+      <span class="section-lbl">One more step</span>
+      <h1 class="scene-title">Choose your plan to unlock your dashboard</h1>
+      <p class="scene-sub">Your account is ready — the teachings, articles, and suhbah unlock once your membership is active.</p>
+    </div>
+
+    <div class="finalizing" id="finalizing">
+      <div class="spinner"></div>
+      <p>Confirming your payment…</p>
+    </div>
+
+    <div class="plans" id="plans">
+      <div class="plan-card is-recommended">
+        <span class="plan-badge">First 30 seats</span>
+        <div class="plan-name">Founding member</div>
+        <div class="plan-price"><span class="cur">£</span>17</div>
+        <div class="plan-period">a month, renewed by choice</div>
+        <p class="plan-note">Locked in at this rate for as long as you remain a member.</p>
+        <button class="plan-btn" type="button" data-plan="founding"><span>Choose Founding</span></button>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Standard</div>
+        <div class="plan-price"><span class="cur">£</span>25</div>
+        <div class="plan-period">a month, renewed by choice</div>
+        <p class="plan-note">Full membership access at the standard rate.</p>
+        <button class="plan-btn" type="button" data-plan="standard"><span>Choose Standard</span></button>
+      </div>
+    </div>
+
+    <p class="scene-alt">Payments are handled securely by Stripe. You can cancel any time from your dashboard.</p>
+    <div class="error-message" id="errorMessage"></div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var nav = document.getElementById('nav');
+  if (!nav) return;
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+
+<!-- Supabase + auth (order matters: config -> supabase-js -> client -> auth) -->
+<script src="config.js?v=3"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=13"></script>
+<script src="auth.js?v=2"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  var scene = document.getElementById('scene');
+  var plansEl = document.getElementById('plans');
+  var finalizingEl = document.getElementById('finalizing');
+  var errorEl = document.getElementById('errorMessage');
+  var buttons = document.querySelectorAll('.plan-btn');
+
+  function showError(message) {
+    errorEl.textContent = message;
+    errorEl.classList.add('show');
+  }
+
+  async function getAccessToken() {
+    var session = await window.SupabaseClient.getSession();
+    return session && session.data && session.data.session
+      ? session.data.session.access_token
+      : null;
+  }
+
+  async function startCheckout(plan) {
+    buttons.forEach(function (b) { b.disabled = true; });
+    errorEl.classList.remove('show');
+
+    try {
+      var token = await getAccessToken();
+      if (!token) {
+        window.location.href = 'index.html#login';
+        return;
+      }
+
+      var res = await fetch(window.LRA_CONFIG.supabase.functionsUrl + '/stripe-create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'apikey': window.LRA_CONFIG.supabase.anonKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ plan: plan, origin: window.location.origin })
+      });
+      var data = await res.json();
+
+      if (!res.ok || !data.url) {
+        showError(data.error || 'Could not start checkout. Please try again.');
+        buttons.forEach(function (b) { b.disabled = false; });
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch (e) {
+      console.error('[subscribe] checkout error:', e);
+      showError('An unexpected error occurred. Please try again.');
+      buttons.forEach(function (b) { b.disabled = false; });
+    }
+  }
+
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      startCheckout(btn.dataset.plan);
+    });
+  });
+
+  /* Statuses that grant access — matches the dashboard's ACCESS_STATUSES
+     exactly (past_due keeps access during Stripe's payment-retry grace
+     period, not just 'active') so the two pages never disagree. */
+  var ACCESS_STATUSES = ['active', 'trialing', 'past_due'];
+
+  async function hasAccess() {
+    var sub = await window.SupabaseClient.getSubscription();
+    return !!(sub && ACCESS_STATUSES.indexOf(sub.status) !== -1);
+  }
+
+  async function init() {
+    var userData = await window.SupabaseClient.getCurrentUser();
+    if (!userData || !userData.user) {
+      window.location.href = 'index.html#login';
+      return;
+    }
+    if (userData.profile && userData.profile.role === 'admin') {
+      window.location.href = 'admin-dashboard.html';
+      return;
+    }
+
+    var params = new URLSearchParams(window.location.search);
+
+    if (params.get('checkout') === 'success') {
+      // Arrived here because the dashboard's own webhook-confirmation poll
+      // timed out — the member already paid, so keep waiting instead of
+      // showing them the plan picker as if they hadn't. If it resolves,
+      // continue straight into the dashboard.
+      scene.classList.add('is-finalizing');
+      finalizingEl.classList.add('show');
+      for (var attempt = 0; attempt < 8; attempt++) {
+        if (await hasAccess()) {
+          window.location.href = '3-membership-v2-dashboard.html';
+          return;
+        }
+        await new Promise(function (resolve) { setTimeout(resolve, 1500); });
+      }
+      // Still not confirmed after ~12s more (24s total including the
+      // dashboard's own wait) — fall through to the plan picker with an
+      // explanatory message rather than polling forever.
+      scene.classList.remove('is-finalizing');
+      finalizingEl.classList.remove('show');
+      showError('Still confirming your payment — if you already paid, this can take a minute. Refresh this page, or contact us if it persists.');
+      return;
+    }
+
+    if (await hasAccess()) {
+      window.location.href = '3-membership-v2-dashboard.html';
+      return;
+    }
+
+    if (params.get('checkout') === 'cancelled') {
+      showError('Checkout was cancelled — pick a plan below whenever you\'re ready.');
+    }
+  }
+  init();
+})();
+</script>
+
+</body>
+</html>

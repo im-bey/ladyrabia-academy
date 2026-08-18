@@ -355,6 +355,14 @@
     background: rgba(128,128,128,.15);
     color: #808080;
   }
+  .status-badge.none, .status-badge.past_due, .status-badge.canceled {
+    background: rgba(197,48,48,.12);
+    color: #c53030;
+  }
+  .status-badge.trialing {
+    background: rgba(181,134,13,.15);
+    color: var(--gold);
+  }
 
   .table-actions {
     display: flex;
@@ -1036,7 +1044,7 @@
           <td>${fullName}</td>
           <td>${user.email || 'N/A'}</td>
           <td><span class="role-badge ${user.role || 'member'}">${user.role || 'member'}</span></td>
-          <td><span class="status-badge ${user.subscription_status || 'active'}">${user.subscription_status || 'active'}</span></td>
+          <td><span class="status-badge ${user.subscription_status || 'none'}">${user.subscription_status || 'No subscription'}</span></td>
           <td>${formattedDate}</td>
           <td>
             <div class="table-actions">

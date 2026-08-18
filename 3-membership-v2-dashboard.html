@@ -687,6 +687,14 @@
 (function () {
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* Subscription statuses that grant dashboard access. 'past_due' is
+     included so a member keeps access during Stripe's payment-retry
+     grace period, not just while fully 'active'. Shared by the
+     membership-gate redirect in refreshContent() and by
+     renderMembershipPanel() so the two never disagree on who counts as
+     a member. */
+  var ACCESS_STATUSES = ['active', 'trialing', 'past_due'];
+
   /* nav background on scroll */
   var nav = document.getElementById('nav');
   function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 40); }
@@ -1022,9 +1030,41 @@
       window.location.href = 'admin-dashboard.html';
       return;
     }
-    
+
+    // Membership gate: the dashboard and its drip content require a
+    // subscription with access (this mirrors the server-side RLS gate on
+    // content_modules/storage — this redirect is for UX, the real
+    // security boundary lives in the database). ACCESS_STATUSES matches
+    // renderMembershipPanel's own definition below — past_due keeps access
+    // during Stripe's payment-retry grace period, not just 'active'.
+    var sub = await window.SupabaseClient.getSubscription();
+    var isActiveMember = sub && ACCESS_STATUSES.indexOf(sub.status) !== -1;
+    if (!isActiveMember) {
+      var checkoutParams = new URLSearchParams(window.location.search);
+      if (checkoutParams.get('checkout') === 'success') {
+        // Just paid — the webhook that activates the subscription may take
+        // a moment to land. Poll briefly instead of bouncing the member
+        // straight back to the paywall they just completed.
+        var loadingTextEl = document.querySelector('.loading-text');
+        if (loadingTextEl) loadingTextEl.textContent = 'Confirming your payment…';
+        for (var attempt = 0; attempt < 8 && !isActiveMember; attempt++) {
+          await new Promise(function (resolve) { setTimeout(resolve, 1500); });
+          sub = await window.SupabaseClient.getSubscription();
+          isActiveMember = sub && ACCESS_STATUSES.indexOf(sub.status) !== -1;
+        }
+      }
+    }
+    if (!isActiveMember) {
+      // Preserve ?checkout=success so subscribe.html knows to keep waiting
+      // on the webhook instead of showing the plan picker to someone who
+      // already paid but whose confirmation is just slow to land.
+      var stillConfirming = new URLSearchParams(window.location.search).get('checkout') === 'success';
+      window.location.href = stillConfirming ? 'subscribe.html?checkout=success' : 'subscribe.html';
+      return;
+    }
+
     // Skip profile completion check - removed as per requirements
-    
+
     // Update profile display with user data
     var nameEl = document.getElementById('memberName');
     var monogramEl = document.getElementById('avatarMonogram');
@@ -1237,7 +1277,7 @@
     var sub = previousUpdatedAt !== undefined
       ? await waitForSubscriptionChange(previousUpdatedAt)
       : await window.SupabaseClient.getSubscription();
-    var hasAccess = sub && ['active', 'trialing', 'past_due'].indexOf(sub.status) !== -1;
+    var hasAccess = sub && ACCESS_STATUSES.indexOf(sub.status) !== -1;
     if (hasAccess) {
       renderActiveMembership(panel, sub);
     } else {
