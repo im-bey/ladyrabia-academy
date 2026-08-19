@@ -31,7 +31,10 @@
     var ready = await waitForOutseta();
     if (!ready || !window.Outseta) return false;
     try {
-      var user = await window.Outseta.getUser();
+      var timeout = new Promise(function (resolve) {
+        setTimeout(function () { resolve(null); }, 4000);
+      });
+      var user = await Promise.race([window.Outseta.getUser(), timeout]);
       if (user && user.Email) {
         currentUser = user;
         return true;
@@ -163,22 +166,24 @@
     var nav = document.querySelector('.nav');
     if (nav && !nav.dataset.authChecked) nav.style.visibility = 'hidden';
 
-    if (await signedIn()) {
-      injectDropdownStyles();
-      var ctaBtn = document.querySelector('.nav-cta');
-      if (ctaBtn) ctaBtn.style.display = 'none';
+    try {
+      if (await signedIn()) {
+        injectDropdownStyles();
+        var ctaBtn = document.querySelector('.nav-cta');
+        if (ctaBtn) ctaBtn.style.display = 'none';
 
-      var existingDropdown = navLinks.querySelector('.nav-account-dropdown');
-      if (!existingDropdown) createDropdown(navLinks, authToggleEl);
-      authToggleEl.style.display = 'none';
-    } else {
-      var cta = document.querySelector('.nav-cta');
-      if (cta) cta.style.display = '';
-    }
-
-    if (nav) {
-      nav.style.visibility = 'visible';
-      nav.dataset.authChecked = 'true';
+        var existingDropdown = navLinks.querySelector('.nav-account-dropdown');
+        if (!existingDropdown) createDropdown(navLinks, authToggleEl);
+        authToggleEl.style.display = 'none';
+      } else {
+        var cta = document.querySelector('.nav-cta');
+        if (cta) cta.style.display = '';
+      }
+    } finally {
+      if (nav) {
+        nav.style.visibility = 'visible';
+        nav.dataset.authChecked = 'true';
+      }
     }
   }
 
