@@ -197,29 +197,46 @@ Deno.serve(async (req: Request) => {
   const hasAccess = ACCESS_STAGES.has(Number(account.AccountStage));
   const simpleStatus = hasAccess ? "active" : "inactive";
 
-  // Detect brand-new members before the upsert — this is what makes "Day 1"
-  // of the drip equal to signup rather than first dashboard visit.
-  const { data: preExisting } = await supabaseAdmin
+  // Find the users row this Outseta identity belongs to: either one already
+  // synced to this outseta_person_uid, or a pre-Outseta legacy row that
+  // matches by email and has never been linked. Upserting on
+  // outseta_person_uid alone would try to INSERT for the latter case and
+  // hit the unique constraint on email, since a NULL outseta_person_uid on
+  // the legacy row never counts as a conflict match.
+  const { data: byPersonUid } = await supabaseAdmin
     .from("users")
     .select("id")
     .eq("outseta_person_uid", personUid)
     .maybeSingle();
-  const isNewMember = !preExisting;
 
-  // Upsert the profile row, keyed by outseta_person_uid.
-  const { data: userRow, error: userErr } = await supabaseAdmin
-    .from("users")
-    .upsert(
-      {
-        outseta_person_uid: personUid,
-        outseta_account_uid: accountUid,
-        email: personEmail,
-        subscription_status: simpleStatus,
-      },
-      { onConflict: "outseta_person_uid" }
-    )
-    .select("id")
-    .single();
+  let existingUserId: string | null = byPersonUid?.id ?? null;
+
+  if (!existingUserId && personEmail) {
+    const { data: byEmail } = await supabaseAdmin
+      .from("users")
+      .select("id, outseta_person_uid")
+      .eq("email", personEmail)
+      .maybeSingle();
+    if (byEmail && !byEmail.outseta_person_uid) {
+      existingUserId = byEmail.id;
+    }
+  }
+
+  // "New member" (for Day-1 Week-1 provisioning purposes) means this
+  // Outseta identity has never been synced before — including the legacy
+  // email-linked case, which never had drip progress either.
+  const isNewMember = !byPersonUid;
+
+  const profileFields = {
+    outseta_person_uid: personUid,
+    outseta_account_uid: accountUid,
+    email: personEmail,
+    subscription_status: simpleStatus,
+  };
+
+  const { data: userRow, error: userErr } = existingUserId
+    ? await supabaseAdmin.from("users").update(profileFields).eq("id", existingUserId).select("id").single()
+    : await supabaseAdmin.from("users").insert(profileFields).select("id").single();
 
   if (userErr || !userRow) {
     console.error("outseta-webhook: failed to upsert user", userErr);
