@@ -7,6 +7,7 @@
    Functions (get-available-content, get-signed-assets, update-progress). */
 (function () {
   var currentUser = null;
+  var userLoadPromise = null;
 
   function waitForOutseta(timeoutMs) {
     var timeout = timeoutMs || 5000;
@@ -27,14 +28,44 @@
     });
   }
 
+  function getAccessToken() {
+    return window.Outseta ? window.Outseta.getAccessToken() : null;
+  }
+
+  function hasAuthRedirectToken() {
+    try {
+      return new URLSearchParams(window.location.search).has('access_token');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* Outseta's own SDK rate-limits Outseta.getUser() internally (it logs
+     "Too many requests to Outseta.getUser()" when hammered) — signedIn()/
+     getUser() get called several times per page (nav render, page-level
+     gating, profile prefill), each with no caching, which was jamming that
+     limiter and making the call hang indefinitely. Memoize the underlying
+     call per page load so it only ever fires once, no matter how many
+     callers ask for it. */
+  function loadOutsetaUser() {
+    if (!userLoadPromise) {
+      userLoadPromise = window.Outseta.getUser().catch(function () { return null; });
+    }
+    return userLoadPromise;
+  }
+
   async function signedIn() {
     var ready = await waitForOutseta();
     if (!ready || !window.Outseta) return false;
+    // No token and not in the middle of an auth-redirect callback (which
+    // carries ?access_token= before Outseta's SDK has necessarily persisted
+    // it to storage yet) — definitely signed out, skip the network call.
+    if (!getAccessToken() && !hasAuthRedirectToken()) return false;
     try {
       var timeout = new Promise(function (resolve) {
-        setTimeout(function () { resolve(null); }, 4000);
+        setTimeout(function () { resolve(null); }, 6000);
       });
-      var user = await Promise.race([window.Outseta.getUser(), timeout]);
+      var user = await Promise.race([loadOutsetaUser(), timeout]);
       if (user && user.Email) {
         currentUser = user;
         return true;
@@ -43,10 +74,6 @@
     } catch (e) {
       return false;
     }
-  }
-
-  function getAccessToken() {
-    return window.Outseta ? window.Outseta.getAccessToken() : null;
   }
 
   /* Call one of the site's Outseta-verified Edge Functions with the
@@ -200,9 +227,10 @@
 
   waitForOutseta().then(function (ready) {
     if (!ready) return;
-    window.Outseta.on('accessToken.set', function () { currentUser = null; apply(); });
+    window.Outseta.on('accessToken.set', function () { currentUser = null; userLoadPromise = null; apply(); });
     window.Outseta.on('logout', function () {
       currentUser = null;
+      userLoadPromise = null;
       apply();
       window.location.href = 'index.html';
     });
