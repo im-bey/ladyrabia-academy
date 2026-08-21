@@ -46,13 +46,13 @@ async function getOrCreateProgress(userId: string, moduleUuid: string) {
 // here must never block the underlying progress write.
 async function postOutsetaActivity(personUid: string, title: string) {
   try {
-    const res = await fetch(`https://${OUTSETA_DOMAIN}/api/v1/crm/activities`, {
+    const res = await fetch(`https://${OUTSETA_DOMAIN}/api/v1/activities/customactivity`, {
       method: "POST",
       headers: {
         Authorization: `Outseta ${OUTSETA_API_KEY}:${OUTSETA_API_SECRET}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ Title: title, Person: { Uid: personUid } }),
+      body: JSON.stringify({ Title: title, EntityType: 2, EntityUid: personUid, ActivityType: 10 }),
     });
     if (!res.ok) {
       console.error("postOutsetaActivity failed", title, res.status, await res.text());
