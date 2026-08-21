@@ -9,6 +9,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script>
+  var o_options = {
+    domain: 'lady-rabia-academy.outseta.com',
+    load: 'auth,profile',
+    auth: {
+      authenticationCallbackUrl: window.location.href
+    }
+  };
+</script>
+<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
+<script src="outseta-client.js?v=1"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -973,6 +984,24 @@
   const loginError = document.getElementById('adminLoginError');
 
   async function checkAdminAccess() {
+    // Outseta is now the normal way in for admins — check it first. The
+    // Supabase email/password gate below stays as a fallback in case
+    // Outseta is ever down.
+    if (window.LRAAuth) {
+      const outsetaSignedIn = await window.LRAAuth.signedIn();
+      if (outsetaSignedIn && window.LRAAuth.isAdmin()) {
+        const user = await window.LRAAuth.getUser();
+        const fullName = user.FullName || [user.FirstName, user.LastName].filter(Boolean).join(' ');
+        if (fullName) {
+          document.getElementById('adminName').textContent = fullName;
+          document.getElementById('avatarMonogram').textContent = fullName.charAt(0).toUpperCase();
+        }
+        loginGate.style.display = 'none';
+        hideLoadingOverlay();
+        return true;
+      }
+    }
+
     const userData = await window.SupabaseClient.getCurrentUser();
     if (!userData || !userData.user) {
       hideLoadingOverlay();

@@ -321,6 +321,12 @@
         return;
       }
       outsetaUser = await window.LRAAuth.getUser();
+      try {
+        var fullProfile = await window.LRAAuth.getProfile();
+        outsetaUser = Object.assign({}, outsetaUser, fullProfile);
+      } catch (e) {
+        console.error('Failed to load full profile (continuing with JWT claims only):', e);
+      }
 
       // Payment comes before profile completion: everyone must have a
       // subscription with access before this page will even show the form.
@@ -394,7 +400,7 @@
         return;
       }
 
-      await outsetaUser.update({
+      await window.LRAAuth.updateProfile({
         FirstName: name,
         LastName: surname,
         PhoneMobile: contactNumber

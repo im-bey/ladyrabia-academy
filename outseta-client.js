@@ -7,7 +7,10 @@
    Functions (get-available-content, get-signed-assets, update-progress). */
 (function () {
   var currentUser = null;
-  var userLoadPromise = null;
+  // Emails that route to admin-dashboard.html on login instead of the
+  // member dashboard, and never need a paid plan. Kept in sync with the
+  // dedicated $0 "Admin" plan in Outseta.
+  var ADMIN_EMAILS = ['ismailbey.m@gmail.com', 'bey.razia@gmail.com'];
 
   function waitForOutseta(timeoutMs) {
     var timeout = timeoutMs || 5000;
@@ -29,51 +32,112 @@
   }
 
   function getAccessToken() {
-    return window.Outseta ? window.Outseta.getAccessToken() : null;
-  }
-
-  function hasAuthRedirectToken() {
+    if (window.Outseta && window.Outseta.getAccessToken()) return window.Outseta.getAccessToken();
+    // Fallback for the moment right after an auth redirect: the token sits
+    // in ?access_token= before Outseta's SDK has necessarily parsed it into
+    // its own storage yet.
     try {
-      return new URLSearchParams(window.location.search).has('access_token');
+      return new URLSearchParams(window.location.search).get('access_token');
     } catch (e) {
-      return false;
+      return null;
     }
   }
 
-  /* Outseta's own SDK rate-limits Outseta.getUser() internally (it logs
-     "Too many requests to Outseta.getUser()" when hammered) — signedIn()/
-     getUser() get called several times per page (nav render, page-level
-     gating, profile prefill), each with no caching, which was jamming that
-     limiter and making the call hang indefinitely. Memoize the underlying
-     call per page load so it only ever fires once, no matter how many
-     callers ask for it. */
-  function loadOutsetaUser() {
-    if (!userLoadPromise) {
-      userLoadPromise = window.Outseta.getUser().catch(function () { return null; });
+  /* Decodes the JWT payload locally — no network call. Outseta.getUser()
+     (the SDK's own method) turned out to be unreliable in this deployment:
+     it's internally rate-limited (Outseta's own code logs "Too many
+     requests to Outseta.getUser()") and was observed hanging/never
+     resolving even for a single, fresh, server-validated access token, so
+     it can't be trusted as the source of truth for "is this person signed
+     in." Every claim we need for nav display and gating (email, name,
+     person uid, account/plan uid) is already embedded in the JWT itself. */
+  function decodeAccessToken(token) {
+    try {
+      var parts = token.split('.');
+      if (parts.length !== 3) return null;
+      var b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var payload = JSON.parse(atob(b64));
+      if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+      return payload;
+    } catch (e) {
+      return null;
     }
-    return userLoadPromise;
+  }
+
+  function userFromClaims(claims) {
+    return {
+      Uid: claims.sub,
+      Email: claims.email,
+      FirstName: claims.given_name,
+      LastName: claims.family_name,
+      FullName: claims.name,
+      AccountUid: claims['outseta:accountUid'],
+      PlanUid: claims['outseta:planUid'],
+    };
   }
 
   async function signedIn() {
     var ready = await waitForOutseta();
     if (!ready || !window.Outseta) return false;
-    // No token and not in the middle of an auth-redirect callback (which
-    // carries ?access_token= before Outseta's SDK has necessarily persisted
-    // it to storage yet) — definitely signed out, skip the network call.
-    if (!getAccessToken() && !hasAuthRedirectToken()) return false;
-    try {
-      var timeout = new Promise(function (resolve) {
-        setTimeout(function () { resolve(null); }, 6000);
-      });
-      var user = await Promise.race([loadOutsetaUser(), timeout]);
-      if (user && user.Email) {
-        currentUser = user;
-        return true;
-      }
-      return false;
-    } catch (e) {
-      return false;
+    var token = getAccessToken();
+    if (!token) return false;
+    var claims = decodeAccessToken(token);
+    if (!claims || !claims.email) return false;
+    currentUser = userFromClaims(claims);
+    return true;
+  }
+
+  /* Fetches the logged-in person's full profile via REST (GET
+     /api/v1/profile) — fields like PhoneMobile aren't in the JWT, so this
+     is needed anywhere the site prefills a form from existing profile data. */
+  async function getProfile() {
+    var token = getAccessToken();
+    if (!token) throw new Error('Not signed in');
+    var res = await fetch('https://lady-rabia-academy.outseta.com/api/v1/profile', {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    var json = await res.json().catch(function () { return {}; });
+    if (!res.ok) {
+      var err = new Error(json.ErrorMessage || json.error || 'Failed to load profile');
+      err.status = res.status;
+      err.body = json;
+      throw err;
     }
+    return json;
+  }
+
+  /* Updates the logged-in person's own Outseta profile directly via REST
+     (PUT /api/v1/profile with their own bearer token), bypassing the SDK's
+     unreliable .update() method entirely — same endpoint it calls under
+     the hood, just without the flaky wrapper. */
+  async function updateProfile(fields) {
+    var token = getAccessToken();
+    if (!token) throw new Error('Not signed in');
+    var res = await fetch('https://lady-rabia-academy.outseta.com/api/v1/profile', {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(fields || {}),
+    });
+    var json = await res.json().catch(function () { return {}; });
+    if (!res.ok) {
+      var err = new Error(json.ErrorMessage || json.error || 'Profile update failed');
+      err.status = res.status;
+      err.body = json;
+      throw err;
+    }
+    if (currentUser) currentUser = Object.assign({}, currentUser, fields);
+    return json;
+  }
+
+  function isAdminEmail(email) {
+    return ADMIN_EMAILS.indexOf((email || '').toLowerCase()) !== -1;
+  }
+
+  function maybeRedirectAdmin() {
+    if (!currentUser || !isAdminEmail(currentUser.Email)) return;
+    if (/admin-dashboard\.html$/i.test(window.location.pathname)) return;
+    window.location.href = 'admin-dashboard.html';
   }
 
   /* Call one of the site's Outseta-verified Edge Functions with the
@@ -140,10 +204,11 @@
     var menu = document.createElement('div');
     menu.className = 'nav-account-menu';
 
+    var isAdmin = isAdminEmail(currentUser && currentUser.Email);
     var dashboardLink = document.createElement('a');
     dashboardLink.className = 'nav-account-menu-item';
-    dashboardLink.href = '3-membership-v2-dashboard.html';
-    dashboardLink.textContent = 'Dashboard';
+    dashboardLink.href = isAdmin ? 'admin-dashboard.html' : '3-membership-v2-dashboard.html';
+    dashboardLink.textContent = isAdmin ? 'Admin Dashboard' : 'Dashboard';
     menu.appendChild(dashboardLink);
 
     var profileBtn = document.createElement('button');
@@ -218,6 +283,9 @@
     signedIn: signedIn,
     getUser: async function () { await signedIn(); return currentUser; },
     getAccessToken: getAccessToken,
+    getProfile: getProfile,
+    updateProfile: updateProfile,
+    isAdmin: function () { return !!(currentUser && isAdminEmail(currentUser.Email)); },
     callGateway: callGateway,
     signOut: function () {
       if (window.Outseta) window.Outseta.logout();
@@ -227,17 +295,44 @@
 
   waitForOutseta().then(function (ready) {
     if (!ready) return;
-    window.Outseta.on('accessToken.set', function () { currentUser = null; userLoadPromise = null; apply(); });
+
+    var freshRedirectLogin = false;
+    try {
+      freshRedirectLogin = new URLSearchParams(window.location.search).has('access_token');
+    } catch (e) {}
+
+    // Strip ?access_token= from the address bar once the SDK has had a
+    // chance to read it — no reason to leave a raw JWT sitting in the URL,
+    // browser history, or anything that might get bookmarked/shared.
+    function cleanRedirectUrl() {
+      if (!freshRedirectLogin) return;
+      var url = new URL(window.location.href);
+      url.searchParams.delete('access_token');
+      window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+    }
+
+    window.Outseta.on('accessToken.set', async function () {
+      currentUser = null;
+      await apply();
+      cleanRedirectUrl();
+      maybeRedirectAdmin();
+    });
     window.Outseta.on('logout', function () {
       currentUser = null;
-      userLoadPromise = null;
       apply();
       window.location.href = 'index.html';
     });
+
+    function initialLoad() {
+      apply().then(function () {
+        cleanRedirectUrl();
+        if (freshRedirectLogin) maybeRedirectAdmin();
+      });
+    }
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', apply);
+      document.addEventListener('DOMContentLoaded', initialLoad);
     } else {
-      apply();
+      initialLoad();
     }
   });
 })();
