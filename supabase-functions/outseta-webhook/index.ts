@@ -95,6 +95,62 @@ async function fetchAccountState(accountUid: string) {
   return await res.json();
 }
 
+// Posts a custom activity to the member's Outseta activity feed — mirrors
+// the helper in update-progress/index.ts. Fires "ModuleUnlocked" for a
+// brand-new member's Week 1 module, which is what starts the day-3/day-10
+// reminder drip campaign configured in Outseta's dashboard.
+async function postOutsetaActivity(personUid: string, title: string) {
+  try {
+    const res = await fetch(`https://${OUTSETA_DOMAIN}/api/v1/crm/activities`, {
+      method: "POST",
+      headers: {
+        Authorization: `Outseta ${OUTSETA_API_KEY}:${OUTSETA_API_SECRET}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ Title: title, Person: { Uid: personUid } }),
+    });
+    if (!res.ok) {
+      console.error("postOutsetaActivity failed", title, res.status, await res.text());
+    }
+  } catch (e) {
+    console.error("postOutsetaActivity error", title, e);
+  }
+}
+
+// Day 1 of the drip = signup, not first dashboard visit — so a brand-new
+// member gets their first module's user_progress row created here, with
+// started_at=now as the anchor timestamp, instead of waiting for the
+// dashboard/gateway to lazily create it on first visit.
+async function provisionFirstModule(userId: string, personUid: string) {
+  const { data: modules } = await supabaseAdmin
+    .from("content_modules")
+    .select("id")
+    .eq("is_disabled", false)
+    .order("month", { ascending: true })
+    .order("week", { ascending: true })
+    .limit(1);
+  const firstModule = modules?.[0];
+  if (!firstModule) return;
+
+  const { data: existing } = await supabaseAdmin
+    .from("user_progress")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("module_id", firstModule.id)
+    .maybeSingle();
+  if (existing) return;
+
+  const now = new Date().toISOString();
+  const { error } = await supabaseAdmin.from("user_progress").insert({
+    user_id: userId,
+    module_id: firstModule.id,
+    status: "available",
+    started_at: now,
+    notes: { reflections: [] },
+  });
+  if (!error) await postOutsetaActivity(personUid, "ModuleUnlocked");
+}
+
 Deno.serve(async (req: Request) => {
   const rawBody = await req.text();
   const signature = req.headers.get("x-hub-signature-256");
@@ -141,6 +197,15 @@ Deno.serve(async (req: Request) => {
   const hasAccess = ACCESS_STAGES.has(Number(account.AccountStage));
   const simpleStatus = hasAccess ? "active" : "inactive";
 
+  // Detect brand-new members before the upsert — this is what makes "Day 1"
+  // of the drip equal to signup rather than first dashboard visit.
+  const { data: preExisting } = await supabaseAdmin
+    .from("users")
+    .select("id")
+    .eq("outseta_person_uid", personUid)
+    .maybeSingle();
+  const isNewMember = !preExisting;
+
   // Upsert the profile row, keyed by outseta_person_uid.
   const { data: userRow, error: userErr } = await supabaseAdmin
     .from("users")
@@ -161,6 +226,10 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ received: true, error: "user_upsert_failed" }), {
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  if (isNewMember && hasAccess) {
+    await provisionFirstModule(userRow.id, personUid);
   }
 
   const subscriptionUid = account.CurrentSubscription?.Uid;

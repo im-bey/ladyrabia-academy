@@ -99,27 +99,38 @@ Deno.serve(async (req: Request) => {
       const userProgress = progressByModuleId[module.id] || { status: "available" };
       let state = "locked";
       let unlockAfter: string | null = null;
-
-      const isReleased = !module.release_date || now >= new Date(module.release_date);
+      const prevModule = prevModuleById[module.id];
 
       if (!module.is_published) {
         state = "locked";
         unlockAfter = "Not yet released";
-      } else if (!isReleased) {
-        state = "locked";
-        unlockAfter = "Releases soon";
       } else if (isFullyComplete(userProgress)) {
         state = "complete";
-      } else {
-        const prevModule = prevModuleById[module.id];
-        if (!prevModule) {
-          state = "current";
-        } else if (isFullyComplete(progressByModuleId[prevModule.id])) {
-          state = "current";
-        } else {
+      } else if (module.auto_release_after_days != null) {
+        // Time-relative auto-release (e.g. "The Portrait"): gated on elapsed
+        // time since the PRECEDING module became available for this user,
+        // not on that module's completion.
+        const anchorProgress = prevModule ? progressByModuleId[prevModule.id] : null;
+        if (!anchorProgress?.started_at) {
           state = "locked";
-          unlockAfter = `Complete Week ${prevModule.week} (${prevModule.month}) to unlock`;
+          unlockAfter = prevModule ? `Complete Week ${prevModule.week} (${prevModule.month}) first` : "Not yet available";
+        } else {
+          const releaseAt = new Date(anchorProgress.started_at);
+          releaseAt.setDate(releaseAt.getDate() + module.auto_release_after_days);
+          if (now >= releaseAt) {
+            state = "current";
+          } else {
+            state = "locked";
+            unlockAfter = `Releases ${releaseAt.toISOString()}`;
+          }
         }
+      } else if (!prevModule) {
+        state = "current";
+      } else if (isFullyComplete(progressByModuleId[prevModule.id])) {
+        state = "current";
+      } else {
+        state = "locked";
+        unlockAfter = `Complete Week ${prevModule.week} (${prevModule.month}) to unlock`;
       }
 
       return {

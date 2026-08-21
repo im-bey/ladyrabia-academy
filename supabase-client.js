@@ -488,6 +488,8 @@
           type: moduleData.type,
           title: moduleData.title || '',
           description: moduleData.description || '',
+          reflection_prompt: moduleData.reflectionPrompt || null,
+          auto_release_after_days: moduleData.autoReleaseAfterDays || null,
           release_date: moduleData.releaseDate || new Date().toISOString(),
           order_index: moduleData.week || 1,
           is_published: false,

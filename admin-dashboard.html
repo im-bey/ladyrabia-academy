@@ -787,8 +787,9 @@
         </div>
         
         <div class="form-field">
-          <label class="form-label">Release Date</label>
-          <input type="date" class="form-input" id="releaseDate" required>
+          <label class="form-label">Legacy Release Date (unused)</label>
+          <input type="date" class="form-input" id="releaseDate">
+          <small style="color: #808080; font-size: 12px; margin-top: 0.25rem; display: block;">No longer gates availability — content unlocks per-member, in sequence. Optional.</small>
         </div>
         
         <div class="form-field">
@@ -813,7 +814,19 @@
         <label class="form-label">Description</label>
         <textarea class="form-textarea" id="contentDescription" placeholder="Brief description of the content..."></textarea>
       </div>
-      
+
+      <div class="form-field" style="margin-bottom: 1.5rem;">
+        <label class="form-label">Reflection Question</label>
+        <textarea class="form-textarea" id="contentReflectionPrompt" placeholder="The specific question members answer to unlock the next week (leave blank for a generic prompt)..."></textarea>
+        <small style="color: #808080; font-size: 12px; margin-top: 0.25rem; display: block;">Shown above the reflection box for this module. Unrelated to the practical activity.</small>
+      </div>
+
+      <div class="form-field" style="margin-bottom: 1.5rem;">
+        <label class="form-label">Auto-release after (days)</label>
+        <input type="number" class="form-input" id="contentAutoReleaseDays" min="1" placeholder="e.g. 7 — leave blank for normal reflection-gated unlock">
+        <small style="color: #808080; font-size: 12px; margin-top: 0.25rem; display: block;">Only for bonus content like "The Portrait": releases N days after the PRECEDING module became available, instead of waiting for it to be completed.</small>
+      </div>
+
       <div class="dropzones-grid">
         <!-- Audio Dropzone -->
         <div class="dropzone" id="audioDropzone" data-type="audio">
@@ -1346,27 +1359,33 @@
     // Get form values
     const title = document.getElementById('contentTitle').value.trim();
     const description = document.getElementById('contentDescription').value.trim();
+    const reflectionPrompt = document.getElementById('contentReflectionPrompt').value.trim();
+    const autoReleaseDaysRaw = document.getElementById('contentAutoReleaseDays').value;
     const releaseDate = document.getElementById('releaseDate').value;
     const releaseHour = document.getElementById('releaseHour').value || '00';
     const releaseMinute = document.getElementById('releaseMinute').value || '00';
     const isPublished = document.getElementById('isPublished').checked;
-    
+
     // Validate
-    if (!title || !releaseDate) {
-      alert('Please fill in all required fields (Title, Release Date)');
+    if (!title) {
+      alert('Please fill in the Title');
       return;
     }
-    
-    // Combine date + time into datetime string
-    const releaseDatetime = `${releaseDate}T${releaseHour.padStart(2, '0')}:${releaseMinute.padStart(2, '0')}:00`;
-    
+
+    // Combine date + time into datetime string (optional — legacy field)
+    const releaseDatetime = releaseDate
+      ? `${releaseDate}T${releaseHour.padStart(2, '0')}:${releaseMinute.padStart(2, '0')}:00`
+      : null;
+
     btn.disabled = true;
     status.textContent = 'Uploading...';
-    
+
     try {
       const updateData = {
         title,
         description,
+        reflection_prompt: reflectionPrompt || null,
+        auto_release_after_days: autoReleaseDaysRaw ? parseInt(autoReleaseDaysRaw, 10) : null,
         release_date: releaseDatetime,
         is_published: isPublished
       };
@@ -1441,6 +1460,8 @@
         document.getElementById('contentType').value = '';
         document.getElementById('contentTitle').value = '';
         document.getElementById('contentDescription').value = '';
+        document.getElementById('contentReflectionPrompt').value = '';
+        document.getElementById('contentAutoReleaseDays').value = '';
         document.getElementById('releaseDate').value = '';
         document.getElementById('releaseHour').value = '';
         document.getElementById('releaseMinute').value = '';
@@ -1527,6 +1548,8 @@
     document.getElementById('contentType').value = moduleData.type;
     document.getElementById('contentTitle').value = moduleData.title;
     document.getElementById('contentDescription').value = moduleData.description || moduleData.note || '';
+    document.getElementById('contentReflectionPrompt').value = moduleData.reflection_prompt || '';
+    document.getElementById('contentAutoReleaseDays').value = moduleData.auto_release_after_days || '';
     document.getElementById('releaseDate').value = moduleData.release_date ? moduleData.release_date.split('T')[0] : '';
     if (moduleData.release_date) {
       const dt = new Date(moduleData.release_date);
@@ -1626,8 +1649,8 @@
               <button class="btn btn-sm" onclick="cancelEditTitle('${module.slug}')">Cancel</button>
             </div>
             <div class="module-meta">
-              ${module.month} · Week ${module.week} · ${module.type} · 
-              Release: ${new Date(module.release_date).toLocaleDateString()} ${new Date(module.release_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} · 
+              ${module.month} · Week ${module.week} · ${module.type}
+              ${module.auto_release_after_days ? ` · Auto-releases ${module.auto_release_after_days}d after prior step` : ''} ·
               ${publishStatus} ${disabledBadge}
             </div>
           </div>
@@ -1722,6 +1745,8 @@
         document.getElementById('contentType').value = '';
         document.getElementById('contentTitle').value = '';
         document.getElementById('contentDescription').value = '';
+        document.getElementById('contentReflectionPrompt').value = '';
+        document.getElementById('contentAutoReleaseDays').value = '';
         document.getElementById('releaseDate').value = '';
         document.getElementById('releaseHour').value = '';
         document.getElementById('releaseMinute').value = '';
@@ -1782,8 +1807,8 @@
       </div>
       <div class="form-grid">
         <div class="form-field">
-          <label class="form-label">Month (YYYY-MM)</label>
-          <input type="month" class="form-input" id="newWeekMonth" required>
+          <label class="form-label">Unit</label>
+          <input type="text" class="form-input" id="newWeekMonth" placeholder="e.g., unit-01" required>
         </div>
         <div class="form-field">
           <label class="form-label">Week Number</label>
@@ -1807,6 +1832,14 @@
           <label class="form-label">Description (optional)</label>
           <textarea class="form-textarea" id="newWeekDescription" placeholder="Brief description..."></textarea>
         </div>
+        <div class="form-field" style="grid-column: 1 / -1;">
+          <label class="form-label">Reflection Question (optional)</label>
+          <textarea class="form-textarea" id="newWeekReflectionPrompt" placeholder="Leave blank for a generic prompt..."></textarea>
+        </div>
+        <div class="form-field" style="grid-column: 1 / -1;">
+          <label class="form-label">Auto-release after (days, optional)</label>
+          <input type="number" class="form-input" id="newWeekAutoReleaseDays" min="1" placeholder="Only for bonus content like &quot;The Portrait&quot;">
+        </div>
       </div>
       <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
         <button class="btn-primary" id="createNewWeekBtn">Create Week</button>
@@ -1820,10 +1853,13 @@
   // Add New Week Button Handler
   document.getElementById('addNewWeekBtn').addEventListener('click', function() {
     document.getElementById('addNewWeekModal').classList.add('active');
-    // Auto-populate month with current month
-    const now = new Date();
-    const monthStr = now.toISOString().slice(0, 7);
-    document.getElementById('newWeekMonth').value = monthStr;
+    // Auto-populate with the next unit label (e.g. existing 'unit-01' -> 'unit-02').
+    const existingUnits = (allModules || [])
+      .map(m => m.month)
+      .filter(m => /^unit-\d+$/.test(m || ''));
+    const highest = existingUnits.reduce((max, m) => Math.max(max, parseInt(m.split('-')[1], 10)), 0);
+    const nextUnit = 'unit-' + String(highest + 1).padStart(2, '0');
+    document.getElementById('newWeekMonth').value = existingUnits.length ? nextUnit : 'unit-01';
   });
 
   // Close Modal Handlers
@@ -1887,20 +1923,22 @@
     const btn = this;
     const status = document.getElementById('newWeekStatus');
     
-    const month = document.getElementById('newWeekMonth').value;
+    const month = document.getElementById('newWeekMonth').value.trim();
     const week = parseInt(document.getElementById('newWeekNumber').value);
     const type = document.getElementById('newWeekType').value;
     const title = document.getElementById('newWeekTitle').value.trim();
     const description = document.getElementById('newWeekDescription').value.trim();
-    
+    const reflectionPrompt = document.getElementById('newWeekReflectionPrompt').value.trim();
+    const autoReleaseDaysRaw = document.getElementById('newWeekAutoReleaseDays').value;
+
     if (!month || !week || !type) {
-      alert('Please fill in Month, Week Number, and Type');
+      alert('Please fill in Unit, Week Number, and Type');
       return;
     }
-    
+
     btn.disabled = true;
     status.textContent = 'Creating...';
-    
+
     try {
       const result = await window.SupabaseClient.createContentModule({
         month: month,
@@ -1908,7 +1946,8 @@
         type: type,
         title: title,
         description: description,
-        releaseDate: new Date().toISOString()
+        reflectionPrompt: reflectionPrompt || null,
+        autoReleaseAfterDays: autoReleaseDaysRaw ? parseInt(autoReleaseDaysRaw, 10) : null
       });
       
       if (result.error) {
@@ -1936,6 +1975,8 @@
         document.getElementById('newWeekType').value = '';
         document.getElementById('newWeekTitle').value = '';
         document.getElementById('newWeekDescription').value = '';
+        document.getElementById('newWeekReflectionPrompt').value = '';
+        document.getElementById('newWeekAutoReleaseDays').value = '';
         status.textContent = '';
         status.style.color = '';
         btn.disabled = false;

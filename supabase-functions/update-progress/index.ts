@@ -15,6 +15,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { jwtVerify, createRemoteJWKSet } from "npm:jose@5";
 
 const OUTSETA_DOMAIN = Deno.env.get("OUTSETA_DOMAIN")!;
+const OUTSETA_API_KEY = Deno.env.get("OUTSETA_API_KEY")!;
+const OUTSETA_API_SECRET = Deno.env.get("OUTSETA_API_SECRET")!;
 const JWKS = createRemoteJWKSet(new URL(`https://${OUTSETA_DOMAIN}/.well-known/jwks`));
 
 const supabaseAdmin = createClient(
@@ -35,6 +37,66 @@ async function getOrCreateProgress(userId: string, moduleUuid: string) {
     .eq("module_id", moduleUuid)
     .maybeSingle();
   return data || { user_id: userId, module_id: moduleUuid, status: "in_progress", notes: { reflections: [] } };
+}
+
+// Posts a custom activity to the member's Outseta activity feed. An Outseta
+// drip campaign (configured in the dashboard, not here) is triggered by the
+// "ModuleUnlocked" title and stopped by "ReflectionSubmitted" — this is what
+// drives the day-3/day-10/etc. reminder nudges. Fire-and-forget: a failure
+// here must never block the underlying progress write.
+async function postOutsetaActivity(personUid: string, title: string) {
+  try {
+    const res = await fetch(`https://${OUTSETA_DOMAIN}/api/v1/crm/activities`, {
+      method: "POST",
+      headers: {
+        Authorization: `Outseta ${OUTSETA_API_KEY}:${OUTSETA_API_SECRET}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ Title: title, Person: { Uid: personUid } }),
+    });
+    if (!res.ok) {
+      console.error("postOutsetaActivity failed", title, res.status, await res.text());
+    }
+  } catch (e) {
+    console.error("postOutsetaActivity error", title, e);
+  }
+}
+
+// Finds the module immediately after `moduleUuid` in the global (month,
+// week) sequence, and — if that user has no progress row for it yet —
+// creates one with started_at=now. That timestamp is the per-user anchor
+// get-available-content later reads for time-relative auto-release modules
+// (e.g. "The Portrait" releasing N days after Week 4 became available).
+async function provisionNextModule(userId: string, completedModuleUuid: string): Promise<boolean> {
+  const { data: modules } = await supabaseAdmin
+    .from("content_modules")
+    .select("id, month, week")
+    .eq("is_disabled", false)
+    .order("month", { ascending: true })
+    .order("week", { ascending: true });
+  if (!modules) return false;
+
+  const idx = modules.findIndex((m: any) => m.id === completedModuleUuid);
+  const nextModule = idx >= 0 ? modules[idx + 1] : undefined;
+  if (!nextModule) return false;
+
+  const { data: existing } = await supabaseAdmin
+    .from("user_progress")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("module_id", nextModule.id)
+    .maybeSingle();
+  if (existing) return false;
+
+  const now = new Date().toISOString();
+  await supabaseAdmin.from("user_progress").insert({
+    user_id: userId,
+    module_id: nextModule.id,
+    status: "available",
+    started_at: now,
+    notes: { reflections: [] },
+  });
+  return true;
 }
 
 Deno.serve(async (req: Request) => {
@@ -170,6 +232,13 @@ Deno.serve(async (req: Request) => {
         status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (action === "complete") {
+      const unlockedNext = await provisionNextModule(userRow.id, moduleUuid);
+      if (unlockedNext) await postOutsetaActivity(personUid, "ModuleUnlocked");
+    } else if (action === "addReflection") {
+      await postOutsetaActivity(personUid, "ReflectionSubmitted");
     }
 
     return new Response(JSON.stringify({ success: true }), {

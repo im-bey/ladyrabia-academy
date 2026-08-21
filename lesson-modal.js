@@ -418,6 +418,13 @@
     }
     
     /* Notes Section */
+    .lesson-reflection-prompt {
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 16px;
+      font-style: italic;
+      color: #5a5240;
+      margin: 0 0 0.75rem;
+    }
     .lesson-notes-textarea {
       width: 100%;
       min-height: 140px;
@@ -753,8 +760,9 @@
 
           <div class="lesson-section" id="notesSection">
             <h3 class="lesson-section-title">Your Reflections</h3>
-            <textarea 
-              class="lesson-notes-textarea" 
+            <p class="lesson-reflection-prompt" id="reflectionPromptText"></p>
+            <textarea
+              class="lesson-notes-textarea"
               id="lessonNotes"
               placeholder="Write your thoughts, reflections, and insights here. Click Post to save."
             ></textarea>
@@ -1174,6 +1182,14 @@
       })();
     }
     
+    /* Show the admin-authored reflection question, or fall back to a
+       generic prompt when this module has none set. */
+    var reflectionPromptEl = document.getElementById('reflectionPromptText');
+    if (reflectionPromptEl) {
+      reflectionPromptEl.textContent = (lessonData.moduleData && lessonData.moduleData.reflection_prompt) ||
+        'Write a short reflection on this week to unlock the next one.';
+    }
+
     /* Clear textarea and reset post button */
     document.getElementById('lessonNotes').value = '';
     document.getElementById('postReflectionBtn').textContent = 'Post Reflection';
