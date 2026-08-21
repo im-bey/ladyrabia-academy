@@ -330,7 +330,10 @@
 <script>
   var o_options = {
     domain: 'lady-rabia-academy.outseta.com',
-    load: 'auth,profile'
+    load: 'auth,profile',
+    auth: {
+      authenticationCallbackUrl: window.location.href
+    }
   };
 </script>
 <script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
