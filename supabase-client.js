@@ -258,9 +258,56 @@
   }
 
   /* Admin Content Management */
+  /* Outseta-authenticated admins have no Supabase Auth session, so the
+     RLS-gated calls below (all keyed off auth.uid()) can't authorize their
+     writes. When signed in that way, route through the service-role
+     admin-gateway Edge Function instead — same return shape either way, so
+     call sites in admin-dashboard.html never need to know which path ran. */
+  function useOutsetaAdminGateway() {
+    return !!(window.LRAAuth && window.LRAAuth.isAdmin && window.LRAAuth.isAdmin());
+  }
+
+  async function callAdminGateway(action, fields) {
+    try {
+      const token = window.LRAAuth.getAccessToken();
+      const res = await fetch(SUPABASE_URL + '/functions/v1/admin-gateway', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ action: action }, fields || {})),
+      });
+      const json = await res.json().catch(function () { return {}; });
+      if (!res.ok) return { error: { message: json.error || 'Request failed' } };
+      return { data: json.data, error: null };
+    } catch (error) {
+      return { error };
+    }
+  }
+
+  async function callAdminGatewayUpload(file, bucket, path) {
+    try {
+      const token = window.LRAAuth.getAccessToken();
+      const form = new FormData();
+      form.append('action', 'uploadAsset');
+      form.append('file', file);
+      form.append('bucket', bucket);
+      form.append('path', path);
+      const res = await fetch(SUPABASE_URL + '/functions/v1/admin-gateway', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+        body: form,
+      });
+      const json = await res.json().catch(function () { return {}; });
+      if (!res.ok) return { error: { message: json.error || 'Upload failed' } };
+      return { data: json.data, error: null };
+    } catch (error) {
+      return { error };
+    }
+  }
+
   async function uploadAsset(file, bucket, path) {
+    if (useOutsetaAdminGateway()) return callAdminGatewayUpload(file, bucket, path);
     if (!supabase) return { error: 'Supabase not initialized' };
-    
+
     try {
       const { data, error } = await supabase.storage
         .from(bucket)
@@ -268,7 +315,7 @@
           cacheControl: '3600',
           upsert: true
         });
-      
+
       if (error) return { error };
       return { data: { path: data.path }, error: null };
     } catch (error) {
@@ -292,6 +339,7 @@
   }
 
   async function deleteAsset(bucket, path) {
+    if (useOutsetaAdminGateway()) return callAdminGateway('deleteAsset', { bucket: bucket, path: path });
     if (!supabase) return { error: 'Supabase not initialized' };
     
     try {
@@ -329,6 +377,7 @@
   }
 
   async function updateContentModule(slug, fields) {
+    if (useOutsetaAdminGateway()) return callAdminGateway('updateContentModule', { slug: slug, fields: fields });
     if (!supabase) return { error: 'Supabase not initialized' };
     
     try {
@@ -350,6 +399,7 @@
   }
 
   async function getModulesAdmin(filters = {}) {
+    if (useOutsetaAdminGateway()) return callAdminGateway('getModulesAdmin', { month: filters.month });
     if (!supabase) return { error: 'Supabase not initialized' };
     
     try {
@@ -373,6 +423,7 @@
   }
 
   async function deleteContentModule(slug) {
+    if (useOutsetaAdminGateway()) return callAdminGateway('deleteContentModule', { slug: slug });
     if (!supabase) return { error: 'Supabase not initialized' };
     
     try {
@@ -412,6 +463,7 @@
   }
 
   async function getSignedAssetsForModule(module) {
+    if (useOutsetaAdminGateway()) return callAdminGateway('getSignedAssetsForModule', { moduleData: module });
     if (!supabase) return { error: 'Supabase not initialized' };
     
     try {
@@ -470,15 +522,16 @@
   }
 
   async function createContentModule(moduleData) {
+    if (useOutsetaAdminGateway()) return callAdminGateway('createContentModule', { moduleData: moduleData });
     if (!supabase) return { error: 'Supabase not initialized' };
-    
+
     try {
       // Generate slug from month-week-type
       const monthPart = moduleData.month.replace('-', '');
       const weekPart = `w${moduleData.week}`;
       const typePart = moduleData.type.toLowerCase();
       const slug = `${monthPart}-${weekPart}-${typePart}`;
-      
+
       const { data, error } = await supabase
         .from('content_modules')
         .insert({
@@ -543,6 +596,10 @@
      ══════════════════════════════════════════════ */
 
   async function getAllUsers() {
+    if (useOutsetaAdminGateway()) {
+      const result = await callAdminGateway('getAllUsers', {});
+      return { data: result.data || [], error: result.error };
+    }
     if (!supabase) return { data: [], error: 'Supabase not initialized' };
     
     try {
@@ -564,6 +621,7 @@
   }
 
   async function updateUserRole(userId, newRole) {
+    if (useOutsetaAdminGateway()) return callAdminGateway('updateUserRole', { userId: userId, newRole: newRole });
     if (!supabase) return { error: 'Supabase not initialized' };
     
     try {
