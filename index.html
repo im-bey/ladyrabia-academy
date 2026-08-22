@@ -104,17 +104,19 @@
     text-align: center;
     padding: 7rem 1.5rem 4rem;
   }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: url('assets/hero-artwork.png') center 60%/cover no-repeat;
+  }
+  .hero-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: rgba(250,247,240,.62);
+  }
   .hero-tiles {
     position: absolute; inset: -60px; opacity: .5; pointer-events: none;
-    will-change: transform;
+    will-change: transform; z-index: 2;
   }
-  .hero-arch {
-    position: absolute; left: 50%; top: 50%;
-    width: min(680px, 92vw); height: auto; pointer-events: none;
-    will-change: transform;
-  }
-  .hero-arch path { stroke: var(--gold-light); fill: none; }
-  .hero-content { position: relative; z-index: 2; max-width: 760px; }
+  .hero-content { position: relative; z-index: 3; max-width: 760px; }
   .hero-label {
     font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
     color: var(--gold); display: block; margin-bottom: 1.4rem;
@@ -122,13 +124,15 @@
   .hero h1 {
     font-family: 'Playfair Display', serif;
     font-size: clamp(30px, 4.6vw, 52px);
-    font-weight: 400; font-style: italic; line-height: 1.32;
+    font-weight: 400; font-style: italic; line-height: 1.45;
     color: var(--green); margin-bottom: 1.4rem;
+    text-shadow: 0 2px 14px rgba(255,255,255,.9), 0 0 40px rgba(255,255,255,.7);
   }
-  .hero h1 .line { display: block; overflow: hidden; }
+  .hero h1 .line { display: block; overflow: hidden; margin-bottom: .12em; }
   .hero h1 .line span { display: inline-block; }
   .hero-sub {
-    font-size: clamp(16px, 1.5vw, 19px); line-height: 1.85; color: var(--muted);
+    font-size: clamp(16px, 1.5vw, 19px); line-height: 1.85; color: var(--muted); font-weight: 700;
+    text-shadow: 0 0 1px #fff, 0 0 1px #fff, 0 1px 12px rgba(255,255,255,.95), 0 0 24px rgba(255,255,255,.8);
     font-style: italic; max-width: 540px; margin: 0 auto 2.4rem;
   }
   .btn-primary {
@@ -148,7 +152,8 @@
   .btn-primary span { position: relative; z-index: 1; }
   .cta-secondary {
     display: block; font-size: 14px; color: var(--gold); letter-spacing: .05em;
-    margin-top: 14px; font-style: italic; text-decoration: none; transition: color .3s;
+    margin-top: 14px; font-style: italic; font-weight: 700; text-decoration: none; transition: color .3s;
+    text-shadow: 0 1px 10px rgba(255,255,255,.9), 0 0 4px rgba(255,255,255,.8);
   }
   .cta-secondary:hover { color: var(--green); }
   .scroll-hint {
@@ -335,8 +340,7 @@
 <nav class="nav" id="nav">
   <div class="nav-inner">
     <a class="nav-logo" href="index.html">
-      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.8 15.2,8 8,15.2 0.8,8" fill="none" stroke="#b5860d" stroke-width="0.8"/><polygon points="8,4.6 11.4,8 8,11.4 4.6,8" fill="#b5860d"/></svg>
-      <span>Lady Rabi'a Academy</span>
+      <img src="assets/lady-rabia-wordmark.png" alt="Lady Rabi'a Academy" style="height:58px;width:auto;display:block">
     </a>
     <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -380,6 +384,8 @@
 
 <!-- ══ HERO ══ -->
 <header class="hero" id="hero" data-screen-label="Hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-overlay" aria-hidden="true"></div>
   <svg class="hero-tiles" id="heroTiles" aria-hidden="true" width="100%" height="100%">
     <defs>
       <pattern id="tile" width="56" height="56" patternUnits="userSpaceOnUse">
@@ -395,12 +401,6 @@
     <rect width="100%" height="100%" fill="url(#tile)"/>
   </svg>
 
-  <svg class="hero-arch" id="heroArch" viewBox="0 0 680 560" aria-hidden="true">
-    <path id="archOuter" stroke-width="1.1" d="M 60 560 L 60 300 C 60 195 105 130 240 78 C 300 55 325 38 340 6 C 355 38 380 55 440 78 C 575 130 620 195 620 300 L 620 560"/>
-    <path id="archInner" stroke-width="0.5" opacity="0.7" d="M 78 560 L 78 302 C 78 205 120 145 248 94 C 305 72 328 52 340 26 C 352 52 375 72 432 94 C 560 145 602 205 602 302 L 602 560"/>
-    <polygon id="archFinial" points="340,-14 348,-4 340,6 332,-4" fill="#b5860d" stroke="none" opacity="0"/>
-  </svg>
-
   <div class="hero-content">
     <span class="hero-label reveal" id="heroLabel">Lady Rabi'a Academy</span>
     <h1 id="heroTitle">
@@ -414,7 +414,7 @@
     </div>
   </div>
 
-  <div class="scroll-hint" id="scrollHint"><span>Begin</span><span class="thread"></span></div>
+  <div class="scroll-hint" id="scrollHint"><span class="thread"></span></div>
 </header>
 
 <!-- ══ THE WORK ══ -->
@@ -590,30 +590,24 @@
   if (!window.gsap || reduced) return; /* page fully readable without animation */
 
   gsap.registerPlugin(ScrollTrigger);
-  gsap.set('#heroArch', { xPercent: -50, yPercent: -52 });
 
-  /* ── hero entrance (GSAP port of the original CSS-class sequence) ── */
-  var archOuter = document.getElementById('archOuter');
-  var archInner = document.getElementById('archInner');
-  [archOuter, archInner].forEach(function (p) {
-    var len = p.getTotalLength();
-    p.style.strokeDasharray = len;
-    p.style.strokeDashoffset = len;
-  });
+  /* ── hero entrance ── */
+  gsap.set('.hero-bg', { scale: 1.15, opacity: 0 });
+  gsap.set('.hero-overlay', { opacity: 0 });
+
   var intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
   intro
-    .to(archOuter, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0)
-    .to(archInner, { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, 0.25)
-    .to('#archFinial', { opacity: 1, duration: .8 }, 1.9)
+    .to('.hero-bg', { opacity: 1, scale: 1, duration: 2.2, ease: 'power2.out' }, 0)
+    .to('.hero-overlay', { opacity: 1, duration: 1.6 }, 0.3)
     .from('#heroLabel', { y: 18, opacity: 0, duration: .9 }, 0.7)
     .from('#heroTitle .line span', { yPercent: 110, duration: 1.1, stagger: .16, ease: 'power4.out' }, 0.9)
     .from('#heroSub', { y: 22, opacity: 0, duration: .9 }, 1.5)
     .from('#heroCtas', { y: 22, opacity: 0, duration: .9 }, 1.75)
     .from('#scrollHint', { opacity: 0, duration: .9 }, 2.3);
 
-  /* ── hero parallax (cinematic): tiles drift, arch lifts, content fades ── */
+  /* ── hero parallax: tiles + bg image drift, content fades ── */
   gsap.to('#heroTiles', { y: 60, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
-  gsap.to('#heroArch', { y: -90, opacity: .25, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.to('.hero-bg', { y: -60, scale: 1.06, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
   gsap.to('.hero-content', { y: -50, opacity: 0, ease: 'none', scrollTrigger: { trigger: '#hero', start: '30% top', end: 'bottom top', scrub: true } });
 
   /* ── generic reveals: staggered fade + rise ── */
