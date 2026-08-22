@@ -31,16 +31,55 @@
     });
   }
 
-  function getAccessToken() {
-    if (window.Outseta && window.Outseta.getAccessToken()) return window.Outseta.getAccessToken();
-    // Fallback for the moment right after an auth redirect: the token sits
-    // in ?access_token= before Outseta's SDK has necessarily parsed it into
-    // its own storage yet.
+  // Outseta's own SDK storage was observed NOT surviving a plain full-page
+  // navigation to another page on the same site (confirmed live:
+  // window.Outseta.getAccessToken() returned null on admin-dashboard.html
+  // seconds after a successful login on another page). Rather than trust
+  // it, we keep our own copy in localStorage, which is guaranteed to
+  // persist across pages/tabs on this origin, and treat it as the primary
+  // source of truth.
+  var LOCAL_TOKEN_KEY = 'lra_access_token';
+
+  function persistToken(token) {
     try {
-      return new URLSearchParams(window.location.search).get('access_token');
+      if (token) localStorage.setItem(LOCAL_TOKEN_KEY, token);
+      else localStorage.removeItem(LOCAL_TOKEN_KEY);
+    } catch (e) {}
+  }
+
+  function readStoredToken() {
+    try {
+      var token = localStorage.getItem(LOCAL_TOKEN_KEY);
+      if (!token || !decodeAccessToken(token)) {
+        if (token) persistToken(null); // expired/invalid — clear it
+        return null;
+      }
+      return token;
     } catch (e) {
       return null;
     }
+  }
+
+  function getAccessToken() {
+    var stored = readStoredToken();
+    if (stored) return stored;
+
+    var sdkToken = window.Outseta && window.Outseta.getAccessToken();
+    if (sdkToken) {
+      persistToken(sdkToken);
+      return sdkToken;
+    }
+
+    // Fallback for the moment right after an auth redirect: the token sits
+    // in ?access_token= before Outseta's SDK has necessarily parsed it.
+    try {
+      var urlToken = new URLSearchParams(window.location.search).get('access_token');
+      if (urlToken) {
+        persistToken(urlToken);
+        return urlToken;
+      }
+    } catch (e) {}
+    return null;
   }
 
   /* Decodes the JWT payload locally — no network call. Outseta.getUser()
@@ -288,6 +327,8 @@
     isAdmin: function () { return !!(currentUser && isAdminEmail(currentUser.Email)); },
     callGateway: callGateway,
     signOut: function () {
+      currentUser = null;
+      persistToken(null);
       if (window.Outseta) window.Outseta.logout();
     },
     refresh: apply,
@@ -319,6 +360,7 @@
     });
     window.Outseta.on('logout', function () {
       currentUser = null;
+      persistToken(null);
       apply();
       window.location.href = 'index.html';
     });
