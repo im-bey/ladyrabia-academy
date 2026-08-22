@@ -131,7 +131,7 @@
   .hero h1 .line { display: block; overflow: hidden; margin-bottom: .12em; }
   .hero h1 .line span { display: inline-block; }
   .hero-sub {
-    font-size: clamp(16px, 1.5vw, 19px); line-height: 1.85; color: var(--muted); font-weight: 700;
+    font-size: clamp(16px, 1.5vw, 19px); line-height: 1.85; color: var(--muted);
     text-shadow: 0 0 1px #fff, 0 0 1px #fff, 0 1px 12px rgba(255,255,255,.95), 0 0 24px rgba(255,255,255,.8);
     font-style: italic; max-width: 540px; margin: 0 auto 2.4rem;
   }
@@ -402,7 +402,6 @@
   </svg>
 
   <div class="hero-content">
-    <span class="hero-label reveal" id="heroLabel">Lady Rabi'a Academy</span>
     <h1 id="heroTitle">
       <span class="line"><span>Your child is not waiting for better parenting.</span></span>
       <span class="line"><span>They are waiting for a better you.</span></span>
@@ -599,8 +598,7 @@
   intro
     .to('.hero-bg', { opacity: 1, scale: 1, duration: 2.2, ease: 'power2.out' }, 0)
     .to('.hero-overlay', { opacity: 1, duration: 1.6 }, 0.3)
-    .from('#heroLabel', { y: 18, opacity: 0, duration: .9 }, 0.7)
-    .from('#heroTitle .line span', { yPercent: 110, duration: 1.1, stagger: .16, ease: 'power4.out' }, 0.9)
+    .from('#heroTitle .line span', { yPercent: 110, duration: 1.1, stagger: .16, ease: 'power4.out' }, 0.7)
     .from('#heroSub', { y: 22, opacity: 0, duration: .9 }, 1.5)
     .from('#heroCtas', { y: 22, opacity: 0, duration: .9 }, 1.75)
     .from('#scrollHint', { opacity: 0, duration: .9 }, 2.3);
