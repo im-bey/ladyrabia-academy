@@ -1097,6 +1097,12 @@
 
   // Sign out
   document.getElementById('signOutBtn').addEventListener('click', async function() {
+    // Admin sessions can come from either auth path — sign out of both so
+    // this works regardless of which one is actually active. Outseta's
+    // logout() fires its own 'logout' event (handled in outseta-client.js)
+    // which also redirects, but navigate explicitly here too in case only
+    // the Supabase fallback session was active.
+    if (window.LRAAuth) window.LRAAuth.signOut();
     await window.SupabaseClient.signOut();
     window.location.href = 'index.html';
   });
