@@ -250,16 +250,19 @@
     dashboardLink.textContent = isAdmin ? 'Admin Dashboard' : 'Dashboard';
     menu.appendChild(dashboardLink);
 
-    // Outseta's embed script intercepts clicks on links matching its own
-    // domain + /profile + the #o-authenticated marker and opens the
-    // profile/billing popup instead of navigating — this is Outseta's own
-    // documented install-embed pattern (profile module already loaded via
-    // o_options' load: 'auth,profile' on every page).
-    var profileLink = document.createElement('a');
-    profileLink.className = 'nav-account-menu-item';
-    profileLink.href = 'https://lady-rabia-academy.outseta.com/profile?#o-authenticated';
-    profileLink.textContent = 'Profile & Billing';
-    menu.appendChild(profileLink);
+    // Outseta's SDK auto-binds its href-selector-based profile trigger only
+    // to elements present at its own init scan (monitorDom is off by
+    // default), so a link created dynamically here — after that scan —
+    // never gets picked up. Call the JS API directly instead; it's the
+    // reliable path for anything not in the DOM at page load.
+    var profileBtn = document.createElement('button');
+    profileBtn.className = 'nav-account-menu-item';
+    profileBtn.type = 'button';
+    profileBtn.textContent = 'Profile & Billing';
+    profileBtn.addEventListener('click', function () {
+      if (window.Outseta && window.Outseta.profile) window.Outseta.profile.open({ mode: 'popup' });
+    });
+    menu.appendChild(profileBtn);
 
     var communityLink = document.createElement('a');
     communityLink.className = 'nav-account-menu-item';
