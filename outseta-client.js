@@ -294,6 +294,18 @@
     return dropdown;
   }
 
+  // Admins only need the account dropdown (Admin Dashboard / Profile &
+  // Billing / Community / Sign out) — the marketing nav links (Home, About
+  // Razia, The Membership, The Opening Teaching) aren't relevant to them
+  // and just clutter the bar, so hide them once signed in as admin.
+  function setMarketingLinksVisible(navLinks, authToggleEl, visible) {
+    var links = navLinks.querySelectorAll('.nav-link');
+    for (var i = 0; i < links.length; i++) {
+      if (links[i] === authToggleEl) continue;
+      links[i].style.display = visible ? '' : 'none';
+    }
+  }
+
   async function apply() {
     var authToggleEl = document.querySelector('[data-auth-toggle]');
     if (!authToggleEl) return;
@@ -311,9 +323,11 @@
         var existingDropdown = navLinks.querySelector('.nav-account-dropdown');
         if (!existingDropdown) createDropdown(navLinks, authToggleEl);
         authToggleEl.style.display = 'none';
+        setMarketingLinksVisible(navLinks, authToggleEl, !isAdminEmail(currentUser && currentUser.Email));
       } else {
         var cta = document.querySelector('.nav-cta');
         if (cta) cta.style.display = '';
+        setMarketingLinksVisible(navLinks, authToggleEl, true);
       }
     } finally {
       if (nav) {
