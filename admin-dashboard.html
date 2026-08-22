@@ -263,6 +263,22 @@
     flex-wrap: wrap;
     gap: 1rem;
   }
+  #userManagementDetails > summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  #userManagementDetails > summary::-webkit-details-marker {
+    display: none;
+  }
+  #userManagementDetails > summary::after {
+    content: '▾';
+    font-size: 20px;
+    color: var(--muted);
+    transition: transform .2s;
+  }
+  #userManagementDetails[open] > summary::after {
+    transform: rotate(180deg);
+  }
   .section-title {
     font-family: 'Playfair Display', serif;
     font-size: 28px;
@@ -736,30 +752,35 @@
 
   <!-- USER MANAGEMENT -->
   <section class="section">
-    <div class="section-header">
-      <h2 class="section-title">User Management</h2>
-      <button class="btn" id="refreshBtn">Refresh</button>
-    </div>
-    <div class="table-container">
-      <div id="loadingState" class="loading">Loading users...</div>
-      <table class="table" id="usersTable" style="display: none;">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Joined</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="usersTableBody">
-        </tbody>
-      </table>
-      <div id="emptyState" class="empty-state" style="display: none;">
-        No users found
+    <details id="userManagementDetails">
+      <summary class="section-header">
+        <h2 class="section-title" style="display: inline;">User Management</h2>
+        <span style="color: var(--muted); font-size: 14px; font-style: italic;">Click to expand</span>
+      </summary>
+      <div style="display: flex; justify-content: flex-end; margin: 1rem 0 0.5rem;">
+        <button class="btn" id="refreshBtn">Refresh</button>
       </div>
-    </div>
+      <div class="table-container">
+        <div id="loadingState" class="loading">Loading users...</div>
+        <table class="table" id="usersTable" style="display: none;">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+          </tbody>
+        </table>
+        <div id="emptyState" class="empty-state" style="display: none;">
+          No users found
+        </div>
+      </div>
+    </details>
   </section>
 
   <!-- CONTENT UPLOAD -->
