@@ -372,6 +372,12 @@
     }
 
     window.Outseta.on('accessToken.set', async function () {
+      // Persist the fresh token BEFORE re-checking auth state — otherwise
+      // getAccessToken() would keep returning the old cached value from
+      // localStorage (it's checked first, and a still-unexpired old token
+      // would win over the new one Outseta just issued).
+      var freshToken = window.Outseta.getAccessToken();
+      if (freshToken) persistToken(freshToken);
       currentUser = null;
       await apply();
       cleanRedirectUrl();

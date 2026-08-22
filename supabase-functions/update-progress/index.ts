@@ -89,14 +89,14 @@ async function provisionNextModule(userId: string, completedModuleUuid: string):
   if (existing) return false;
 
   const now = new Date().toISOString();
-  await supabaseAdmin.from("user_progress").insert({
+  const { error } = await supabaseAdmin.from("user_progress").insert({
     user_id: userId,
     module_id: nextModule.id,
     status: "available",
     started_at: now,
     notes: { reflections: [] },
   });
-  return true;
+  return !error;
 }
 
 Deno.serve(async (req: Request) => {
@@ -173,11 +173,17 @@ Deno.serve(async (req: Request) => {
     let update: Record<string, unknown> = { user_id: userRow.id, module_id: moduleUuid, updated_at: now };
 
     if (action === "complete") {
+      // Re-fetch immediately before writing rather than reusing the
+      // `progress` read at the top of the request — narrows the window
+      // where a just-submitted addReflection (a separate concurrent
+      // request) could otherwise be missed, silently failing this
+      // completion via a stale has_reflection=false.
+      const freshProgress = await getOrCreateProgress(userRow.id, moduleUuid);
       update.status = "completed";
       update.completed_at = now;
-      update.has_reflection = progress.has_reflection === true;
-      update.has_listened_fully = progress.has_listened_fully === true;
-      update.notes = progress.notes || { reflections: [] };
+      update.has_reflection = freshProgress.has_reflection === true;
+      update.has_listened_fully = freshProgress.has_listened_fully === true;
+      update.notes = freshProgress.notes || { reflections: [] };
     } else if (action === "addReflection") {
       const reflections = (progress.notes?.reflections || []).slice();
       reflections.push({ id: crypto.randomUUID(), content: String(body.content || "").trim(), timestamp: now });

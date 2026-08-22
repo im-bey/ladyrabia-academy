@@ -106,14 +106,19 @@ Deno.serve(async (req: Request) => {
         unlockAfter = "Not yet released";
       } else if (isFullyComplete(userProgress)) {
         state = "complete";
+      } else if (!prevModule) {
+        // First in the whole sequence — nothing to gate on (including for
+        // an auto-release module, which would otherwise have no preceding
+        // module to anchor its timer to and could never unlock).
+        state = "current";
       } else if (module.auto_release_after_days != null) {
         // Time-relative auto-release (e.g. "The Portrait"): gated on elapsed
         // time since the PRECEDING module became available for this user,
         // not on that module's completion.
-        const anchorProgress = prevModule ? progressByModuleId[prevModule.id] : null;
+        const anchorProgress = progressByModuleId[prevModule.id];
         if (!anchorProgress?.started_at) {
           state = "locked";
-          unlockAfter = prevModule ? `Complete Week ${prevModule.week} (${prevModule.month}) first` : "Not yet available";
+          unlockAfter = `Complete Week ${prevModule.week} (${prevModule.month}) first`;
         } else {
           const releaseAt = new Date(anchorProgress.started_at);
           releaseAt.setDate(releaseAt.getDate() + module.auto_release_after_days);
@@ -124,8 +129,6 @@ Deno.serve(async (req: Request) => {
             unlockAfter = `Releases ${releaseAt.toISOString()}`;
           }
         }
-      } else if (!prevModule) {
-        state = "current";
       } else if (isFullyComplete(progressByModuleId[prevModule.id])) {
         state = "current";
       } else {
